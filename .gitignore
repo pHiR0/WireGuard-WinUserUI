@@ -1,0 +1,31 @@
+﻿# Build
+bin/
+obj/
+artifacts/
+build/
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Logs
+*.log
+
+# Test
+TestResults/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Packaging output
+*.nupkg
+*.msi
+*.exe
+
+# Secrets / local config
+appsettings.Development.json
+*.pfx
+*.snk

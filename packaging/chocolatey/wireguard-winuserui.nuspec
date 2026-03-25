@@ -1,0 +1,17 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>wireguard-winuserui</id>
+    <version>0.1.0</version>
+    <title>WireGuard-WinUserUI</title>
+    <authors>TuNombre</authors>
+    <projectUrl>https://github.com/TU_USUARIO/WireGuard-WinUserUI</projectUrl>
+    <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Windows UI for managing WireGuard tunnels as a non-admin user, powered by a privileged backend service.</description>
+    <tags>wireguard windows ui non-admin vpn</tags>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

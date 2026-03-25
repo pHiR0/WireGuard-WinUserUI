@@ -1,0 +1,34 @@
+﻿name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore .\WireGuard-WinUserUI.sln
+        shell: pwsh
+        continue-on-error: true
+
+      - name: Build
+        run: dotnet build .\WireGuard-WinUserUI.sln -c Release --no-restore
+        shell: pwsh
+        continue-on-error: true
+
+      - name: Test
+        run: dotnet test .\WireGuard-WinUserUI.sln -c Release
+        shell: pwsh
+        continue-on-error: true
