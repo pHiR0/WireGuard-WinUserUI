@@ -60,8 +60,13 @@
             <!-- ==================== TAB: Túneles ==================== -->
             <TabItem Header="Túneles">
                 <DockPanel>
-                    <!-- Tunnel List -->
-                    <ScrollViewer>
+                    <!-- Tunnel List with watermark background -->
+                    <Grid>
+                        <Image Source="/Assets/icon_256.png" Opacity="0.04"
+                               Width="280" Height="280"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               IsHitTestVisible="False"/>
+                        <ScrollViewer>
                         <ItemsControl ItemsSource="{Binding Tunnels}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:TunnelViewModel">
@@ -159,6 +164,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
+                    </Grid>
                 </DockPanel>
             </TabItem>
 
