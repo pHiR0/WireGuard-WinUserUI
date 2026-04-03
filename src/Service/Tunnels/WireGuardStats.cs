@@ -28,14 +28,46 @@ internal static partial class WireGuardStats
 
         try
         {
-            var output = RunWg($"show {tunnelName}", logger);
-            return ParseOutput(output);
+            // wg show gives runtime stats (endpoint, handshake, transfer)
+            var showOutput = RunWg($"show {tunnelName}", logger);
+            var (_, endpoint, lastHandshake, rxBytes, txBytes) = ParseOutput(showOutput);
+
+            // wg showconf gives the static config including the interface Address
+            string? address = null;
+            try
+            {
+                var confOutput = RunWg($"showconf {tunnelName}", logger);
+                address = ParseAddressFromConf(confOutput);
+            }
+            catch { /* not fatal — address stays null */ }
+
+            return (address, endpoint, lastHandshake, rxBytes, txBytes);
         }
         catch (Exception ex)
         {
             logger?.LogDebug(ex, "Failed to get stats for tunnel '{Name}'", tunnelName);
             return (null, null, null, 0, 0);
         }
+    }
+
+    /// <summary>
+    /// Parses the Address field from wg showconf output:
+    ///   [Interface]
+    ///   Address = 10.8.0.2/24
+    /// </summary>
+    private static string? ParseAddressFromConf(string confOutput)
+    {
+        foreach (var line in confOutput.Split('\n'))
+        {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("Address", StringComparison.OrdinalIgnoreCase) && trimmed.Contains('='))
+            {
+                var val = trimmed[(trimmed.IndexOf('=') + 1)..].Trim();
+                if (!string.IsNullOrEmpty(val))
+                    return val;
+            }
+        }
+        return null;
     }
 
     private static string RunWg(string args, ILogger? logger)
@@ -83,9 +115,7 @@ internal static partial class WireGuardStats
         {
             var trimmed = line.Trim();
 
-            if (trimmed.StartsWith("address:", StringComparison.OrdinalIgnoreCase))
-                address = trimmed[8..].Trim();
-            else if (trimmed.StartsWith("endpoint:", StringComparison.OrdinalIgnoreCase))
+            if (trimmed.StartsWith("endpoint:", StringComparison.OrdinalIgnoreCase))
                 endpoint = trimmed[9..].Trim();
             else if (trimmed.StartsWith("latest handshake:", StringComparison.OrdinalIgnoreCase))
                 lastHandshake = trimmed[17..].Trim();
