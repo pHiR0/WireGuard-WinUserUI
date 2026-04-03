@@ -24,12 +24,12 @@ public partial class TunnelViewModel : ViewModelBase
 
     public string StatusText => Status switch
     {
-        TunnelStatus.Running => "Connected",
-        TunnelStatus.Stopped => "Disconnected",
-        TunnelStatus.StartPending => "Connecting...",
-        TunnelStatus.StopPending => "Disconnecting...",
+        TunnelStatus.Running => "Conectado",
+        TunnelStatus.Stopped => "Desconectado",
+        TunnelStatus.StartPending => "Conectando...",
+        TunnelStatus.StopPending => "Desconectando...",
         TunnelStatus.Error => "Error",
-        _ => "Unknown",
+        _ => "Desconocido",
     };
 
     public string StatusColor => Status switch

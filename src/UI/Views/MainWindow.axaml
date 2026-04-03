@@ -37,9 +37,9 @@
         <Border IsVisible="{Binding !IsConnected}" VerticalAlignment="Center"
                 HorizontalAlignment="Center">
             <StackPanel Spacing="8" HorizontalAlignment="Center">
-                <TextBlock Text="Not connected to the WireGuard service"
+                <TextBlock Text="No conectado al servicio WireGuard"
                            HorizontalAlignment="Center" Foreground="#94A3B8" FontSize="14"/>
-                <Button Content="Connect" Command="{Binding ConnectCommand}"
+                <Button Content="Conectar" Command="{Binding ConnectCommand}"
                         HorizontalAlignment="Center"/>
             </StackPanel>
         </Border>
@@ -48,13 +48,13 @@
         <TabControl IsVisible="{Binding IsConnected}"
                     SelectedIndex="{Binding SelectedTabIndex}">
 
-            <!-- ==================== TAB: Tunnels ==================== -->
-            <TabItem Header="Tunnels">
+            <!-- ==================== TAB: Túneles ==================== -->
+            <TabItem Header="Túneles">
                 <DockPanel>
                     <!-- Toolbar -->
                     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8"
                                 Margin="0,8,0,12">
-                        <Button Content="Refresh" Command="{Binding RefreshTunnelsCommand}"
+                        <Button Content="Actualizar" Command="{Binding RefreshTunnelsCommand}"
                                 IsEnabled="{Binding !IsRefreshing}"/>
                     </StackPanel>
 
@@ -82,28 +82,28 @@
                                             <!-- Action buttons -->
                                             <StackPanel Orientation="Horizontal" Spacing="6"
                                                         HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                <Button Content="Connect"
+                                                <Button Content="Conectar"
                                                         Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StartTunnelCommand}"
                                                         CommandParameter="{Binding}"
                                                         IsVisible="{Binding CanStart}"
                                                         IsEnabled="{Binding !IsLoading}"
                                                         Classes="accent"/>
-                                                <Button Content="Disconnect"
+                                                <Button Content="Desconectar"
                                                         Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StopTunnelCommand}"
                                                         CommandParameter="{Binding}"
                                                         IsVisible="{Binding CanStop}"
                                                         IsEnabled="{Binding !IsLoading}"/>
-                                                <Button Content="Restart"
+                                                <Button Content="Reiniciar"
                                                         Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RestartTunnelCommand}"
                                                         CommandParameter="{Binding}"
                                                         IsVisible="{Binding CanStop}"
                                                         IsEnabled="{Binding !IsLoading}"/>
-                                                <Button Content="Delete"
+                                                <Button Content="Eliminar"
                                                         Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).DeleteTunnelCommand}"
                                                         CommandParameter="{Binding}"
                                                         IsEnabled="{Binding !IsLoading}"
                                                         Foreground="#F87171"/>
-                                                <Button Content="Export"
+                                                <Button Content="Exportar"
                                                         Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ExportTunnelCommand}"
                                                         CommandParameter="{Binding}"
                                                         IsEnabled="{Binding !IsLoading}"/>
@@ -119,27 +119,27 @@
                 </DockPanel>
             </TabItem>
 
-            <!-- ==================== TAB: Import Tunnel ==================== -->
-            <TabItem Header="Import" x:DataType="vm:MainWindowViewModel"
+            <!-- ==================== TAB: Importar Túnel ==================== -->
+            <TabItem Header="Importar" x:DataType="vm:MainWindowViewModel"
                      IsVisible="{Binding IsAdvancedOperator}">
                 <ScrollViewer>
                     <StackPanel Spacing="12" Margin="0,8"
                                 DataContext="{Binding ImportTunnel}"
                                 x:DataType="vm:ImportTunnelViewModel">
 
-                        <TextBlock Text="Import WireGuard Tunnel" FontSize="16" FontWeight="SemiBold"/>
+                        <TextBlock Text="Importar Túnel WireGuard" FontSize="16" FontWeight="SemiBold"/>
 
                         <!-- Tunnel name -->
                         <StackPanel Spacing="4">
-                            <TextBlock Text="Tunnel Name" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBox Text="{Binding TunnelName}" Watermark="e.g. office-vpn"/>
+                            <TextBlock Text="Nombre del túnel" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBox Text="{Binding TunnelName}" Watermark="ej. oficina-vpn"/>
                         </StackPanel>
 
                         <!-- Conf content -->
                         <StackPanel Spacing="4">
-                            <TextBlock Text="Configuration (.conf content)" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBlock Text="Configuración (contenido .conf)" FontWeight="SemiBold" FontSize="13"/>
                             <TextBox Text="{Binding ConfContent}" AcceptsReturn="True"
-                                     Height="200" Watermark="Paste .conf content here..."
+                                     Height="200" Watermark="Pega aquí el contenido .conf..."
                                      FontFamily="Consolas, Courier New, monospace" FontSize="12"/>
                         </StackPanel>
 
@@ -166,10 +166,10 @@
                         <!-- Success message -->
                         <Border Background="#0D2B1A" CornerRadius="4" Padding="8,6"
                                 IsVisible="{Binding ImportSuccess}">
-                            <TextBlock Text="Tunnel imported successfully!" Foreground="#86EFAC"/>
+                            <TextBlock Text="Túnel importado correctamente." Foreground="#86EFAC"/>
                         </Border>
 
-                        <Button Content="Import Tunnel" Command="{Binding ImportCommand}"
+                        <Button Content="Importar Túnel" Command="{Binding ImportCommand}"
                                 IsEnabled="{Binding !IsImporting}"
                                 HorizontalAlignment="Left"
                                 Classes="accent"/>
@@ -177,8 +177,8 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- ==================== TAB: Users ==================== -->
-            <TabItem Header="Users" x:DataType="vm:MainWindowViewModel"
+            <!-- ==================== TAB: Usuarios ==================== -->
+            <TabItem Header="Usuarios" x:DataType="vm:MainWindowViewModel"
                      IsVisible="{Binding IsAdmin}">
                 <DockPanel DataContext="{Binding UserManagement}"
                            x:DataType="vm:UserManagementViewModel">
@@ -194,11 +194,11 @@
                     <Border DockPanel.Dock="Top" Background="#252B3A" CornerRadius="8"
                             Padding="12" Margin="0,0,0,12">
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Add User" FontWeight="SemiBold" FontSize="14"/>
+                            <TextBlock Text="Añadir Usuario" FontWeight="SemiBold" FontSize="14"/>
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <TextBox Text="{Binding NewUsername}" Watermark="Windows username" Width="200"/>
+                                <TextBox Text="{Binding NewUsername}" Watermark="Nombre de usuario Windows" Width="200"/>
                                 <ComboBox ItemsSource="{Binding AvailableRoles}" SelectedItem="{Binding NewUserRole}" Width="160"/>
-                                <Button Content="Add" Command="{Binding AddUserCommand}"
+                                <Button Content="Añadir" Command="{Binding AddUserCommand}"
                                         Classes="accent"/>
                             </StackPanel>
                         </StackPanel>
@@ -206,7 +206,7 @@
 
                     <!-- Toolbar -->
                     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-                        <Button Content="Refresh Users" Command="{Binding LoadUsersCommand}"
+                        <Button Content="Actualizar usuarios" Command="{Binding LoadUsersCommand}"
                                 IsEnabled="{Binding !IsLoading}"/>
                     </StackPanel>
 
@@ -224,10 +224,10 @@
                                                         HorizontalAlignment="Right" VerticalAlignment="Center">
                                                 <ComboBox ItemsSource="{Binding $parent[ItemsControl].((vm:UserManagementViewModel)DataContext).AvailableRoles}"
                                                           SelectedItem="{Binding Role}" Width="150"/>
-                                                <Button Content="Save"
+                                                <Button Content="Guardar"
                                                         Command="{Binding $parent[ItemsControl].((vm:UserManagementViewModel)DataContext).ChangeRoleCommand}"
                                                         CommandParameter="{Binding}"/>
-                                                <Button Content="Remove"
+                                                <Button Content="Eliminar"
                                                         Command="{Binding $parent[ItemsControl].((vm:UserManagementViewModel)DataContext).RemoveUserCommand}"
                                                         CommandParameter="{Binding}"
                                                         Foreground="#F87171"/>
@@ -241,8 +241,8 @@
                 </DockPanel>
             </TabItem>
 
-            <!-- ==================== TAB: Audit Log ==================== -->
-            <TabItem Header="Audit" x:DataType="vm:MainWindowViewModel"
+            <!-- ==================== TAB: Auditoría ==================== -->
+            <TabItem Header="Auditoría" x:DataType="vm:MainWindowViewModel"
                      IsVisible="{Binding IsAdmin}">
                 <DockPanel DataContext="{Binding AuditLog}"
                            x:DataType="vm:AuditLogViewModel">
@@ -258,10 +258,10 @@
                     <Border DockPanel.Dock="Top" Background="#252B3A" CornerRadius="8"
                             Padding="12" Margin="0,0,0,8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBox Text="{Binding FilterUsername}" Watermark="Filter by user" Width="150"/>
-                            <TextBox Text="{Binding FilterAction}" Watermark="Filter by action" Width="150"/>
-                            <Button Content="Apply" Command="{Binding ApplyFilterCommand}"/>
-                            <Button Content="Refresh" Command="{Binding LoadCommand}"
+                            <TextBox Text="{Binding FilterUsername}" Watermark="Filtrar por usuario" Width="150"/>
+                            <TextBox Text="{Binding FilterAction}" Watermark="Filtrar por acción" Width="150"/>
+                            <Button Content="Aplicar" Command="{Binding ApplyFilterCommand}"/>
+                            <Button Content="Actualizar" Command="{Binding LoadCommand}"
                                     IsEnabled="{Binding !IsLoading}"/>
                         </StackPanel>
                     </Border>
@@ -269,18 +269,18 @@
                     <!-- Pagination -->
                     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8"
                                 HorizontalAlignment="Center" Margin="0,8,0,0">
-                        <Button Content="Previous" Command="{Binding PreviousPageCommand}"
+                        <Button Content="Anterior" Command="{Binding PreviousPageCommand}"
                                 IsEnabled="{Binding CanGoBack}"/>
                         <TextBlock VerticalAlignment="Center" FontSize="12">
-                            <Run Text="Page "/>
+                            <Run Text="Página "/>
                             <Run Text="{Binding CurrentPage}"/>
-                            <Run Text=" of "/>
+                            <Run Text=" de "/>
                             <Run Text="{Binding TotalPages}"/>
                             <Run Text=" ("/>
                             <Run Text="{Binding TotalCount}"/>
-                            <Run Text=" entries)"/>
+                            <Run Text=" entradas)"/>
                         </TextBlock>
-                        <Button Content="Next" Command="{Binding NextPageCommand}"
+                        <Button Content="Siguiente" Command="{Binding NextPageCommand}"
                                 IsEnabled="{Binding CanGoForward}"/>
                     </StackPanel>
 

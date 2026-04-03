@@ -57,9 +57,9 @@ public partial class ImportTunnelViewModel : ViewModelBase
 
         if (result.IsValid)
         {
-            var msg = "Configuration is valid.";
+            var msg = "Configuración válida.";
             if (result.Warnings.Count > 0)
-                msg += $" Warnings: {string.Join("; ", result.Warnings)}";
+                msg += $" Advertencias: {string.Join("; ", result.Warnings)}";
             ValidationMessage = msg;
         }
         else
