@@ -324,8 +324,9 @@
                         <Border Background="#252B3A" CornerRadius="8" Padding="16">
                             <StackPanel Spacing="8">
                                 <TextBlock Text="Notificaciones" FontWeight="SemiBold" FontSize="14"/>
-                                <CheckBox Content="Activar notificaciones de Windows cuando un túnel se conecta o desconecta"
-                                          IsChecked="{Binding EnableNotifications}"/>
+                                <ToggleSwitch IsChecked="{Binding EnableNotifications}"
+                                             OnContent="Notificaciones activadas"
+                                             OffContent="Notificaciones desactivadas"/>
                             </StackPanel>
                         </Border>
 
@@ -333,12 +334,13 @@
                         <Border Background="#252B3A" CornerRadius="8" Padding="16">
                             <StackPanel Spacing="8">
                                 <TextBlock Text="Bandeja del sistema" FontWeight="SemiBold" FontSize="14"/>
-                                <CheckBox Content="Al cerrar la ventana, enviar a la bandeja del sistema (no salir)"
-                                          IsChecked="{Binding MinimizeToTray}"/>
-<!-- Iniciar minimizado -->
-                        <CheckBox Content="Iniciar la aplicación minimizada en la bandeja"
-                                  IsChecked="{Binding StartMinimized}"/>
-                        </StackPanel>
+                                <ToggleSwitch IsChecked="{Binding MinimizeToTray}"
+                                             OnContent="Al cerrar, enviar a la bandeja (no salir)"
+                                             OffContent="Al cerrar, salir de la aplicación"/>
+                                <ToggleSwitch IsChecked="{Binding StartMinimized}"
+                                             OnContent="Iniciar minimizado en la bandeja"
+                                             OffContent="Iniciar con la ventana visible"/>
+                            </StackPanel>
                         </Border>
 
                     </StackPanel>
