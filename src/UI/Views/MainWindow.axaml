@@ -65,7 +65,7 @@
                         <ItemsControl ItemsSource="{Binding Tunnels}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:TunnelViewModel">
-                                    <Border Background="#252B3A" CornerRadius="8"
+                                    <Border Background="{Binding CardBackground}" CornerRadius="8"
                                             Padding="16,12" Margin="0,0,0,8">
                                         <StackPanel>
                                         <DockPanel>

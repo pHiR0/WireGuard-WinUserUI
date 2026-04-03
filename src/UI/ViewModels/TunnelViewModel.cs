@@ -59,6 +59,16 @@ public partial class TunnelViewModel : ViewModelBase
         _ => "#64748B",
     };
 
+    // Card background accent based on connection state
+    public string CardBackground => Status switch
+    {
+        TunnelStatus.Running => "#162A1E",             // dark green tint
+        TunnelStatus.StartPending or
+        TunnelStatus.StopPending => "#2A2516",         // dark amber tint
+        TunnelStatus.Error => "#2A1616",               // dark red tint
+        _ => "#252B3A",                                // default dark card
+    };
+
     public string TransferText
     {
         get
@@ -86,6 +96,7 @@ public partial class TunnelViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsPending));
         OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(StatusColor));
+        OnPropertyChanged(nameof(CardBackground));
     }
 
     partial void OnRxBytesChanged(long value) => OnPropertyChanged(nameof(TransferText));
