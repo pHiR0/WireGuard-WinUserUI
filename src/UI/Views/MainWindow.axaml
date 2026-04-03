@@ -400,6 +400,16 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Inicio con Windows -->
+                        <Border Background="#252B3A" CornerRadius="8" Padding="16">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Inicio con Windows" FontWeight="SemiBold" FontSize="14"/>
+                                <ToggleSwitch IsChecked="{Binding StartWithWindows}"
+                                             OnContent="Iniciar la UI automáticamente al iniciar sesión"
+                                             OffContent="No iniciar automáticamente con Windows"/>
+                            </StackPanel>
+                        </Border>
+
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

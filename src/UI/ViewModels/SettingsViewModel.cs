@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Win32;
 
 namespace WireGuard.UI.ViewModels;
 
@@ -33,6 +34,12 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _startMinimized;
 
+    [ObservableProperty]
+    private bool _startWithWindows;
+
+    private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+    private const string RunValueName = "WireGuard-WinUserUI";
+
     public SettingsViewModel()
     {
         Load();
@@ -43,7 +50,11 @@ public partial class SettingsViewModel : ViewModelBase
     protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
-        if (_isLoaded)
+        if (!_isLoaded) return;
+
+        if (e.PropertyName == nameof(StartWithWindows))
+            ApplyStartWithWindows(StartWithWindows);
+        else
             Save();
     }
 
@@ -79,6 +90,34 @@ public partial class SettingsViewModel : ViewModelBase
             StartMinimized = data.StartMinimized;
         }
         catch { /* use defaults */ }
+
+        // StartWithWindows is read from the registry (authoritative source)
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(RunKey);
+            StartWithWindows = key?.GetValue(RunValueName) is not null;
+        }
+        catch { /* leave false */ }
+    }
+
+    private void ApplyStartWithWindows(bool enable)
+    {
+        try
+        {
+            if (enable)
+            {
+                var exe = Environment.ProcessPath ?? string.Empty;
+                if (string.IsNullOrEmpty(exe)) return;
+                using var key = Registry.CurrentUser.CreateSubKey(RunKey, writable: true);
+                key.SetValue(RunValueName, $"\"{exe}\"");
+            }
+            else
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(RunKey, writable: true);
+                key?.DeleteValue(RunValueName, throwOnMissingValue: false);
+            }
+        }
+        catch { /* ignore */ }
     }
 
     private sealed class SettingsData
