@@ -1,4 +1,5 @@
 using System.IO.Pipes;
+using System.Security.Principal;
 using WireGuard.Shared.IPC;
 using WireGuard.Shared.Models;
 
@@ -24,7 +25,8 @@ public sealed class PipeClient : IPipeClient
             ".",
             PipeConstants.PipeName,
             PipeDirection.InOut,
-            PipeOptions.Asynchronous);
+            PipeOptions.Asynchronous,
+            TokenImpersonationLevel.Identification);
 
         await _pipe.ConnectAsync(5000, ct);
     }

@@ -28,7 +28,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private string _currentUser = string.Empty;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsOperator), nameof(IsAdvancedOperator), nameof(IsAdmin))]
+    [NotifyPropertyChangedFor(nameof(IsOperator), nameof(IsAdvancedOperator), nameof(IsAdmin), nameof(CurrentRoleText))]
     private UserRole _currentRole;
 
     [ObservableProperty]
@@ -53,6 +53,16 @@ public partial class MainWindowViewModel : ViewModelBase
     public bool IsOperator => CurrentRole >= UserRole.Operator;
     public bool IsAdvancedOperator => CurrentRole >= UserRole.AdvancedOperator;
     public bool IsAdmin => CurrentRole >= UserRole.Admin;
+
+    // Role display
+    public string CurrentRoleText => CurrentRole switch
+    {
+        UserRole.Admin            => "Administrador",
+        UserRole.AdvancedOperator => "Operador avanzado",
+        UserRole.Operator         => "Operador",
+        UserRole.Viewer           => "Visualizador",
+        _                         => "Sin rol",
+    };
 
     // Bottom toolbar service status
     public string ServiceStatusColor => IsConnected ? "#4ADE80" : "#F87171";
