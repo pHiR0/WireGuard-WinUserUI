@@ -6,63 +6,41 @@ namespace WireGuard.UI.Services;
 
 /// <summary>
 /// Sends Windows 11 toast notifications using Microsoft.Toolkit.Uwp.Notifications.
-/// Falls back silently if running on an unsupported platform.
+/// For unpackaged Win32 apps the library handles registration automatically.
+/// Calls are always wrapped in try/catch so failures are silent.
 /// </summary>
 public sealed class WindowsNotificationService : INotificationService
 {
-    private readonly bool _supported;
+    // Set the Application User Model ID so Windows knows who is sending the toast.
+    // Required for unpackaged desktop apps.
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern int SetCurrentProcessExplicitAppUserModelID(string appId);
 
     public WindowsNotificationService()
     {
-        _supported = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-        if (_supported)
-        {
-            try
-            {
-                // Register the app with Windows notification system (for unpackaged apps)
-                ToastNotificationManagerCompat.OnActivated += _ => { };
-            }
-            catch { _supported = false; }
-        }
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            SetCurrentProcessExplicitAppUserModelID("WireGuard.WinUserUI");
     }
 
-    public void ShowTunnelConnected(string tunnelName)
-    {
-        if (!_supported) return;
-        ShowToast(
-            "Túnel conectado",
-            $"El túnel «{tunnelName}» se ha conectado correctamente.",
-            "ms-appx:///Assets/icon.ico");
-    }
+    public void ShowTunnelConnected(string tunnelName) =>
+        ShowToast("Túnel conectado", $"El túnel «{tunnelName}» se ha conectado correctamente.");
 
-    public void ShowTunnelDisconnected(string tunnelName)
-    {
-        if (!_supported) return;
-        ShowToast(
-            "Túnel desconectado",
-            $"El túnel «{tunnelName}» se ha desconectado.",
-            "ms-appx:///Assets/icon.ico");
-    }
+    public void ShowTunnelDisconnected(string tunnelName) =>
+        ShowToast("Túnel desconectado", $"El túnel «{tunnelName}» se ha desconectado.");
 
-    public void ShowError(string title, string message)
-    {
-        if (!_supported) return;
+    public void ShowError(string title, string message) =>
         ShowToast(title, message);
-    }
 
-    private static void ShowToast(string title, string body, string? logoUri = null)
+    private static void ShowToast(string title, string body)
     {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
         try
         {
-            var builder = new ToastContentBuilder()
+            new ToastContentBuilder()
                 .AddText(title)
-                .AddText(body);
-
-            if (logoUri is not null)
-                builder.AddAppLogoOverride(new Uri(logoUri));
-
-            builder.Show();
+                .AddText(body)
+                .Show();
         }
-        catch { /* silently ignore if notifications are not available */ }
+        catch { /* silently ignore */ }
     }
 }
