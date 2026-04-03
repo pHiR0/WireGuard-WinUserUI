@@ -186,6 +186,18 @@ public sealed class PipeClient : IPipeClient
         return System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(b64));
     }
 
+    public async Task SetTunnelAutoStartAsync(string name, bool autoStart, CancellationToken ct = default)
+    {
+        var response = await SendAsync(new IpcRequest
+        {
+            Command = IpcCommand.SetTunnelAutoStart,
+            TunnelName = name,
+            AutoStart = autoStart,
+        }, ct);
+        if (!response.Success)
+            throw new InvalidOperationException(response.Error ?? "SetTunnelAutoStart failed");
+    }
+
     // --- Phase 2: User management ---
 
     public async Task<IReadOnlyList<UserInfo>> ListUsersAsync(CancellationToken ct = default)

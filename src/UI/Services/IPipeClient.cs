@@ -25,6 +25,7 @@ public interface IPipeClient : IAsyncDisposable
     Task EditTunnelAsync(string name, string confContent, CancellationToken ct = default);
     Task DeleteTunnelAsync(string name, CancellationToken ct = default);
     Task<string?> ExportTunnelAsync(string name, CancellationToken ct = default);
+    Task SetTunnelAutoStartAsync(string name, bool autoStart, CancellationToken ct = default);
 
     // Phase 2 — User management
     Task<IReadOnlyList<UserInfo>> ListUsersAsync(CancellationToken ct = default);

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.ServiceProcess;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
 using WireGuard.Shared.Models;
 using WireGuard.Shared.Validation;
 
@@ -51,6 +52,7 @@ public sealed partial class TunnelManager : ITunnelManager
                     Name = tunnelName,
                     Status = status,
                     LastChecked = DateTimeOffset.UtcNow,
+                    AutoStart = GetServiceAutoStart(svc.ServiceName),
                     TunnelAddress = address,
                     Endpoint = endpoint,
                     LastHandshake = handshake,
@@ -156,6 +158,23 @@ public sealed partial class TunnelManager : ITunnelManager
         // Install as a WireGuard tunnel service
         await RunWireGuardAsync($"/installtunnelservice \"{confPath}\"", ct);
         _logger.LogInformation("Tunnel '{Name}' installed and registered", name);
+
+        // By default, the service starts immediately after install and is set to Automatic.
+        // Stop it immediately (user must start it manually) and set startup type to Manual.
+        try
+        {
+            var serviceName = TunnelServicePrefix + name;
+            using var svc = new ServiceController(serviceName);
+            svc.Refresh();
+            if (svc.Status == ServiceControllerStatus.Running)
+            {
+                svc.Stop();
+                svc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(15));
+            }
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "Could not stop tunnel '{Name}' after install", name); }
+
+        await SetServiceStartTypeAsync(TunnelServicePrefix + name, autoStart: false, ct);
     }
 
     public async Task EditTunnelAsync(string name, string confContent, CancellationToken ct = default)
@@ -166,12 +185,14 @@ public sealed partial class TunnelManager : ITunnelManager
 
         // Check if the tunnel service currently exists and is running
         bool wasRunning = false;
+        bool wasAutoStart = false;
         var serviceName = TunnelServicePrefix + name;
         try
         {
             using var svc = new ServiceController(serviceName);
             svc.Refresh();
             wasRunning = svc.Status == ServiceControllerStatus.Running;
+            wasAutoStart = GetServiceAutoStart(serviceName);
         }
         catch (InvalidOperationException)
         {
@@ -194,6 +215,10 @@ public sealed partial class TunnelManager : ITunnelManager
         await File.WriteAllTextAsync(confPath, confContent, ct);
         await RunWireGuardAsync($"/installtunnelservice \"{confPath}\"", ct);
 
+        // Restore the startup type the service had before the edit (re-install defaults to Auto)
+        // If it was a fresh install, use Manual (same as new import)
+        await SetServiceStartTypeAsync(TunnelServicePrefix + name, wasAutoStart, ct);
+
         if (wasRunning)
         {
             // Re-start the tunnel since it was running before the edit
@@ -201,6 +226,13 @@ public sealed partial class TunnelManager : ITunnelManager
         }
 
         _logger.LogInformation("Tunnel '{Name}' edited successfully", name);
+    }
+
+    public async Task SetTunnelAutoStartAsync(string name, bool autoStart, CancellationToken ct = default)
+    {
+        var serviceName = TunnelServicePrefix + name;
+        await SetServiceStartTypeAsync(serviceName, autoStart, ct);
+        _logger.LogInformation("Tunnel '{Name}' auto-start set to {AutoStart}", name, autoStart);
     }
 
     public async Task DeleteTunnelAsync(string name, CancellationToken ct = default)
@@ -237,6 +269,35 @@ public sealed partial class TunnelManager : ITunnelManager
 
     private static string GetConfPath(string tunnelName)
         => Path.Combine(WireGuardConfDir, $"{tunnelName}.conf");
+
+    /// <summary>Returns true if the service is configured for Automatic start.</summary>
+    private static bool GetServiceAutoStart(string serviceName)
+    {
+        try
+        {
+            using var key = Registry.LocalMachine.OpenSubKey(
+                $@"SYSTEM\CurrentControlSet\Services\{serviceName}");
+            if (key?.GetValue("Start") is int startValue)
+                return startValue == 2; // 2=Auto, 3=Demand/Manual, 4=Disabled
+        }
+        catch { /* non-critical */ }
+        return false;
+    }
+
+    /// <summary>Sets the Windows service startup type using sc.exe.</summary>
+    private static async Task SetServiceStartTypeAsync(string serviceName, bool autoStart, CancellationToken ct)
+    {
+        var startType = autoStart ? "auto" : "demand";
+        var psi = new ProcessStartInfo("sc.exe", $"config \"{serviceName}\" start={startType}")
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        using var p = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start sc.exe");
+        await p.WaitForExitAsync(ct);
+    }
 
     private static void ValidateTunnelName(string name)
     {

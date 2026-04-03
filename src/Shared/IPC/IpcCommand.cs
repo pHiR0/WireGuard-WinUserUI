@@ -16,6 +16,7 @@ public enum IpcCommand
     EditTunnel,
     DeleteTunnel,
     ExportTunnel,
+    SetTunnelAutoStart,
 
     // Phase 2 — User management
     ListUsers,

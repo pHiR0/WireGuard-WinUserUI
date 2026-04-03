@@ -13,4 +13,5 @@ public interface ITunnelManager
     Task EditTunnelAsync(string name, string confContent, CancellationToken ct = default);
     Task DeleteTunnelAsync(string name, CancellationToken ct = default);
     Task<string?> ExportTunnelAsync(string name, CancellationToken ct = default);
+    Task SetTunnelAutoStartAsync(string name, bool autoStart, CancellationToken ct = default);
 }

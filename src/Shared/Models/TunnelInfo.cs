@@ -6,6 +6,9 @@ public sealed class TunnelInfo
     public TunnelStatus Status { get; init; }
     public DateTimeOffset LastChecked { get; init; }
 
+    /// <summary>True when the WireGuard tunnel Windows service is configured for automatic start.</summary>
+    public bool AutoStart { get; init; }
+
     // Tunnel stats (populated when the tunnel is Running and wg.exe is available)
     public string? TunnelAddress { get; init; }
     public string? Endpoint { get; init; }

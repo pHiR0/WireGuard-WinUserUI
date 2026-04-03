@@ -22,6 +22,9 @@ public sealed class IpcRequest
     // Phase 2 — Audit query
     public AuditQuery? AuditQuery { get; init; }
 
+    // Phase 2 — Tunnel auto-start
+    public bool? AutoStart { get; init; }
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

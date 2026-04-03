@@ -176,6 +176,14 @@ public sealed class RequestHandler
                 var b64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(confContent));
                 return IpcResponse.Ok(b64, request.RequestId);
 
+            case IpcCommand.SetTunnelAutoStart:
+                if (string.IsNullOrEmpty(request.TunnelName))
+                    return IpcResponse.Fail("TunnelName is required", request.RequestId);
+                if (request.AutoStart is null)
+                    return IpcResponse.Fail("AutoStart is required", request.RequestId);
+                await _tunnelManager.SetTunnelAutoStartAsync(request.TunnelName, request.AutoStart.Value, ct);
+                return IpcResponse.Ok(requestId: request.RequestId);
+
             // --- Phase 2: User management ---
 
             case IpcCommand.ListUsers:

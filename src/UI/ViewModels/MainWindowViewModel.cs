@@ -198,6 +198,7 @@ public partial class MainWindowViewModel : ViewModelBase
                     LastHandshake = info.LastHandshake,
                     RxBytes = info.RxBytes,
                     TxBytes = info.TxBytes,
+                    AutoStart = info.AutoStart,
                 });
         }
         OnPropertyChanged(nameof(AnyTunnelRunning));
@@ -252,6 +253,22 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         catch (Exception ex) { ErrorMessage = ex.Message; }
         finally { tunnel.IsLoading = false; }
+    }
+
+    [RelayCommand]
+    private async Task SetTunnelAutoStartAsync(TunnelViewModel? tunnel)
+    {
+        if (tunnel is null || !IsConnected || !IsAdvancedOperator) return;
+        try
+        {
+            ErrorMessage = string.Empty;
+            await _pipeClient.SetTunnelAutoStartAsync(tunnel.Name, tunnel.AutoStart);
+        }
+        catch (Exception ex)
+        {
+            tunnel.AutoStart = !tunnel.AutoStart; // revert on error
+            ErrorMessage = ex.Message;
+        }
     }
 
     [RelayCommand]

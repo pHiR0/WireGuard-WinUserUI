@@ -246,6 +246,18 @@
                                                            IsVisible="{Binding TransferText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
                                             </Grid>
                                         </Border>
+
+                                        <!-- Toggle inicio automático (solo AdvancedOperator+) -->
+                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,8,0,0"
+                                                    IsVisible="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).IsAdvancedOperator}">
+                                            <TextBlock Text="Inicio automático" FontSize="11"
+                                                       Foreground="#94A3B8" VerticalAlignment="Center"/>
+                                            <ToggleSwitch IsChecked="{Binding AutoStart}"
+                                                          Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).SetTunnelAutoStartCommand}"
+                                                          CommandParameter="{Binding}"
+                                                          OnContent="" OffContent=""
+                                                          Padding="0" Margin="0,-4,0,-4"/>
+                                        </StackPanel>
                                     </StackPanel>
                                     </Border>
                                 </DataTemplate>

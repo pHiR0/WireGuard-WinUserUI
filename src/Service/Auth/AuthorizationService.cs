@@ -27,6 +27,7 @@ public sealed class AuthorizationService : IAuthorizationService
         [IpcCommand.EditTunnel] = UserRole.AdvancedOperator,
         [IpcCommand.DeleteTunnel] = UserRole.AdvancedOperator,
         [IpcCommand.ExportTunnel] = UserRole.Admin,
+        [IpcCommand.SetTunnelAutoStart] = UserRole.AdvancedOperator,
 
         // Phase 2 — User management
         [IpcCommand.ListUsers] = UserRole.Admin,

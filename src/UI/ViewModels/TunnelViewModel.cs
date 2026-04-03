@@ -36,6 +36,9 @@ public partial class TunnelViewModel : ViewModelBase
     [ObservableProperty]
     private long _txBytes;
 
+    [ObservableProperty]
+    private bool _autoStart;
+
     public bool CanStart => Status is TunnelStatus.Stopped or TunnelStatus.Error or TunnelStatus.Unknown;
     public bool CanStop => Status is TunnelStatus.Running;
     public bool IsPending => Status is TunnelStatus.StartPending or TunnelStatus.StopPending;
@@ -112,6 +115,7 @@ public partial class TunnelViewModel : ViewModelBase
         LastHandshake = info.LastHandshake;
         RxBytes = info.RxBytes;
         TxBytes = info.TxBytes;
+        AutoStart = info.AutoStart;
     }
 }
 
