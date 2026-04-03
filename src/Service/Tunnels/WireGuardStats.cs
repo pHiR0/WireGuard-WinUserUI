@@ -17,6 +17,9 @@ internal static partial class WireGuardStats
     private static readonly string WgExe =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WireGuard", "wg.exe");
 
+    private static readonly string WireGuardConfDir =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "WireGuard");
+
     /// <summary>
     /// Attempts to retrieve stats for a single tunnel. Returns (null,null,null,0,0) on failure.
     /// </summary>
@@ -32,12 +35,17 @@ internal static partial class WireGuardStats
             var showOutput = RunWg($"show {tunnelName}", logger);
             var (_, endpoint, lastHandshake, rxBytes, txBytes) = ParseOutput(showOutput);
 
-            // wg showconf gives the static config including the interface Address
+            // Read the .conf file directly for the Address field (wg showconf on Windows
+            // does NOT include Address — that is a wireguard-windows platform concept)
             string? address = null;
             try
             {
-                var confOutput = RunWg($"showconf {tunnelName}", logger);
-                address = ParseAddressFromConf(confOutput);
+                var confPath = Path.Combine(WireGuardConfDir, $"{tunnelName}.conf");
+                if (File.Exists(confPath))
+                {
+                    var confContent = File.ReadAllText(confPath);
+                    address = ParseAddressFromConf(confContent);
+                }
             }
             catch { /* not fatal — address stays null */ }
 

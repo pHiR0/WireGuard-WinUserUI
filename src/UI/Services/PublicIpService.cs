@@ -107,7 +107,7 @@ public sealed class PublicIpService : IDisposable
         using var udp = new UdpClient();
         udp.Connect(IPAddress.Parse("208.67.222.222"), 53); // resolver1.opendns.com
 
-        await udp.SendAsync(query, query.Length, ct: ct);
+        await udp.SendAsync(query.AsMemory(), ct);
 
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         timeoutCts.CancelAfter(TimeSpan.FromSeconds(3));

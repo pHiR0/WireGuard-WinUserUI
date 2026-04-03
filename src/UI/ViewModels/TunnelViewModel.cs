@@ -24,6 +24,7 @@ public partial class TunnelViewModel : ViewModelBase
     private string? _tunnelAddress;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDetails))]
     private string? _endpoint;
 
     [ObservableProperty]
