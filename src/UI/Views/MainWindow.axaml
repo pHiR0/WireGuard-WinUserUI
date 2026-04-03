@@ -333,7 +333,7 @@
                         <Border Background="#252B3A" CornerRadius="8" Padding="16">
                             <StackPanel Spacing="8">
                                 <TextBlock Text="Bandeja del sistema" FontWeight="SemiBold" FontSize="14"/>
-                                <CheckBox Content="Minimizar a la bandeja del sistema en lugar de cerrar"
+                                <CheckBox Content="Al cerrar la ventana, enviar a la bandeja del sistema (no salir)"
                                           IsChecked="{Binding MinimizeToTray}"/>
                                 <CheckBox Content="Iniciar minimizado en la bandeja"
                                           IsChecked="{Binding StartMinimized}"/>
