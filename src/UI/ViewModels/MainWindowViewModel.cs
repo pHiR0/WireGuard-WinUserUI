@@ -15,6 +15,7 @@ namespace WireGuard.UI.ViewModels;
 public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IPipeClient _pipeClient;
+    private readonly INotificationService _notifications;
     private CancellationTokenSource? _backgroundCts;
     private const int RefreshIntervalMs = 5000;
     private const int ReconnectIntervalMs = 1000;
@@ -63,11 +64,12 @@ public partial class MainWindowViewModel : ViewModelBase
     public ImportTunnelViewModel ImportTunnel { get; }
     public SettingsViewModel Settings { get; }
 
-    public MainWindowViewModel() : this(new PipeClient()) { }
+    public MainWindowViewModel() : this(new PipeClient(), new WindowsNotificationService()) { }
 
-    public MainWindowViewModel(IPipeClient pipeClient)
+    public MainWindowViewModel(IPipeClient pipeClient, INotificationService? notifications = null)
     {
         _pipeClient = pipeClient;
+        _notifications = notifications ?? new WindowsNotificationService();
         UserManagement = new UserManagementViewModel(pipeClient);
         AuditLog = new AuditLogViewModel(pipeClient);
         ImportTunnel = new ImportTunnelViewModel(pipeClient);
@@ -138,7 +140,18 @@ public partial class MainWindowViewModel : ViewModelBase
         foreach (var info in infos)
         {
             if (byName.TryGetValue(info.Name, out var vm))
+            {
+                var wasRunning = vm.Status == TunnelStatus.Running;
                 vm.UpdateFrom(info);
+                // Fire notifications on status transitions (only when notifications enabled)
+                if (Settings.EnableNotifications)
+                {
+                    if (!wasRunning && info.Status == TunnelStatus.Running)
+                        _notifications.ShowTunnelConnected(info.Name);
+                    else if (wasRunning && info.Status != TunnelStatus.Running)
+                        _notifications.ShowTunnelDisconnected(info.Name);
+                }
+            }
             else
                 Tunnels.Add(new TunnelViewModel
                 {
