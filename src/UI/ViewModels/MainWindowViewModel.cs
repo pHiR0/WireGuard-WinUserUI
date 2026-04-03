@@ -58,6 +58,9 @@ public partial class MainWindowViewModel : ViewModelBase
     public string ServiceStatusColor => IsConnected ? "#4ADE80" : "#F87171";
     public string ServiceStatusText => IsConnected ? "Conectado al servicio" : "Desconectado del servicio";
 
+    // Whether any tunnel is currently in Running state (used by tray icon)
+    public bool AnyTunnelRunning => Tunnels.Any(t => t.Status == TunnelStatus.Running);
+
     // Sub-ViewModels for tabs
     public AuditLogViewModel AuditLog { get; }
     public ImportTunnelViewModel ImportTunnel { get; }
@@ -163,6 +166,7 @@ public partial class MainWindowViewModel : ViewModelBase
                     TxBytes = info.TxBytes,
                 });
         }
+        OnPropertyChanged(nameof(AnyTunnelRunning));
     }
 
     [RelayCommand]
