@@ -33,6 +33,13 @@ public partial class App : Application
             desktop.MainWindow = _mainWindow;
 
             SetupTrayIcon(desktop);
+
+            // Honour the "Iniciar minimizado en la bandeja" setting
+            if (_vm.Settings.StartMinimized)
+            {
+                _mainWindow.Show();   // must Show() first so Avalonia initialises the window
+                _mainWindow.Hide();   // then immediately hide to tray
+            }
         }
 
         base.OnFrameworkInitializationCompleted();
