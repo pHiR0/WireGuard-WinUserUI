@@ -2,12 +2,12 @@ using System;
 using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 
 namespace WireGuard.UI.ViewModels;
 
 /// <summary>
-/// Ajustes de la aplicación UI. Se persisten en %AppData%\WireGuard-WinUserUI\settings.json
+/// Ajustes de la aplicación UI. Se persisten en %AppData%\WireGuard-WinUserUI\settings.json.
+/// Cualquier cambio en una propiedad se guarda automáticamente.
 /// </summary>
 public partial class SettingsViewModel : ViewModelBase
 {
@@ -17,6 +17,9 @@ public partial class SettingsViewModel : ViewModelBase
         "settings.json");
 
     private static readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = true };
+
+    // Flag to avoid saving during the initial Load()
+    private bool _isLoaded;
 
     [ObservableProperty]
     private int _refreshIntervalSeconds = 5;
@@ -30,15 +33,20 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _startMinimized;
 
-    [ObservableProperty]
-    private string _savedMessage = string.Empty;
-
     public SettingsViewModel()
     {
         Load();
+        _isLoaded = true;
     }
 
-    [RelayCommand]
+    // Auto-save whenever any property changes (after Load)
+    protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+        if (_isLoaded)
+            Save();
+    }
+
     private void Save()
     {
         try
@@ -52,12 +60,8 @@ public partial class SettingsViewModel : ViewModelBase
                 StartMinimized = StartMinimized,
             };
             File.WriteAllText(SettingsPath, JsonSerializer.Serialize(data, JsonOpts));
-            SavedMessage = "Configuración guardada.";
         }
-        catch (Exception ex)
-        {
-            SavedMessage = $"Error al guardar: {ex.Message}";
-        }
+        catch { /* silently ignore write errors */ }
     }
 
     private void Load()
@@ -85,3 +89,4 @@ public partial class SettingsViewModel : ViewModelBase
         public bool StartMinimized { get; set; }
     }
 }
+

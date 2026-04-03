@@ -335,19 +335,11 @@
                                 <TextBlock Text="Bandeja del sistema" FontWeight="SemiBold" FontSize="14"/>
                                 <CheckBox Content="Al cerrar la ventana, enviar a la bandeja del sistema (no salir)"
                                           IsChecked="{Binding MinimizeToTray}"/>
-                                <CheckBox Content="Iniciar minimizado en la bandeja"
-                                          IsChecked="{Binding StartMinimized}"/>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Guardar -->
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Button Content="Guardar configuración" Command="{Binding SaveCommand}"
-                                    Classes="accent"/>
-                            <TextBlock Text="{Binding SavedMessage}" VerticalAlignment="Center"
-                                       Foreground="#86EFAC" FontSize="12"
-                                       IsVisible="{Binding SavedMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+<!-- Iniciar minimizado -->
+                        <CheckBox Content="Iniciar la aplicación minimizada en la bandeja"
+                                  IsChecked="{Binding StartMinimized}"/>
                         </StackPanel>
+                        </Border>
 
                     </StackPanel>
                 </ScrollViewer>
