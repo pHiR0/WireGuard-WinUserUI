@@ -73,8 +73,17 @@ public partial class MainWindowViewModel : ViewModelBase
 
     // Sub-ViewModels for tabs
     public AuditLogViewModel AuditLog { get; }
-    public ImportTunnelViewModel ImportTunnel { get; }
     public SettingsViewModel Settings { get; }
+
+    /// <summary>Raised when a tunnel editor dialog should be opened.</summary>
+    public event Action<TunnelEditorViewModel>? OpenEditorRequested;
+
+    /// <summary>
+    /// Raised when the user requests to import a .conf file.
+    /// The subscriber should open a file picker and return the file content (or null if cancelled),
+    /// then the ViewModel will open the editor with that content.
+    /// </summary>
+    public event Func<Task<string?>>? PickConfFileRequested;
 
     public MainWindowViewModel() : this(new PipeClient(), new WindowsNotificationService()) { }
 
@@ -83,7 +92,6 @@ public partial class MainWindowViewModel : ViewModelBase
         _pipeClient = pipeClient;
         _notifications = notifications ?? new WindowsNotificationService();
         AuditLog = new AuditLogViewModel(pipeClient);
-        ImportTunnel = new ImportTunnelViewModel(pipeClient);
         Settings = new SettingsViewModel();
 
         pipeClient.Disconnected += () =>
@@ -294,11 +302,33 @@ public partial class MainWindowViewModel : ViewModelBase
                 ErrorMessage = "No se pudo cargar la configuración del túnel para editar.";
                 return;
             }
-            ImportTunnel.EnterEditMode(tunnel.Name, content);
-            // Switch to the Importar/Editar tab (index 1)
-            SelectedTabIndex = 1;
+            var editorVm = new TunnelEditorViewModel(_pipeClient, TunnelEditorMode.Edit,
+                originalName: tunnel.Name, confContent: content);
+            OpenEditorRequested?.Invoke(editorVm);
         }
         catch (Exception ex) { ErrorMessage = ex.Message; }
+    }
+
+    [RelayCommand]
+    private void NewTunnel()
+    {
+        if (!IsConnected || !IsAdvancedOperator) return;
+        var editorVm = new TunnelEditorViewModel(_pipeClient, TunnelEditorMode.New);
+        OpenEditorRequested?.Invoke(editorVm);
+    }
+
+    [RelayCommand]
+    private async Task ImportTunnelFileAsync()
+    {
+        if (!IsConnected || !IsAdvancedOperator) return;
+        if (PickConfFileRequested is null) return;
+
+        var content = await PickConfFileRequested.Invoke();
+        if (content is null) return;
+
+        var editorVm = new TunnelEditorViewModel(_pipeClient, TunnelEditorMode.New,
+            confContent: content);
+        OpenEditorRequested?.Invoke(editorVm);
     }
 
     public async ValueTask DisposeAsync()

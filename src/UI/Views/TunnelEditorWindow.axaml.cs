@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -6,27 +7,18 @@ using WireGuard.UI.ViewModels;
 
 namespace WireGuard.UI.Views;
 
-public partial class MainWindow : Window
+public partial class TunnelEditorWindow : Window
 {
-    public MainWindow()
+    public TunnelEditorWindow()
     {
         InitializeComponent();
     }
 
-    protected override void OnDataContextChanged(System.EventArgs e)
+    public TunnelEditorWindow(TunnelEditorViewModel viewModel) : this()
     {
-        base.OnDataContextChanged(e);
-        if (DataContext is MainWindowViewModel vm)
-        {
-            vm.OpenEditorRequested += OpenTunnelEditor;
-            vm.PickConfFileRequested += PickConfFileAsync;
-        }
-    }
-
-    private async void OpenTunnelEditor(TunnelEditorViewModel editorVm)
-    {
-        var dialog = new TunnelEditorWindow(editorVm);
-        await dialog.ShowDialog(this);
+        DataContext = viewModel;
+        viewModel.CloseRequested += success => Close(success);
+        viewModel.PickFileRequested += PickConfFileAsync;
     }
 
     private async Task<string?> PickConfFileAsync()
@@ -37,7 +29,11 @@ public partial class MainWindow : Window
             AllowMultiple = false,
             FileTypeFilter =
             [
-                new FilePickerFileType("WireGuard Config") { Patterns = ["*.conf"] },
+                new FilePickerFileType("WireGuard Config")
+                {
+                    Patterns = ["*.conf"],
+                    MimeTypes = ["text/plain"],
+                },
                 new FilePickerFileType("Todos los archivos") { Patterns = ["*"] },
             ],
         };
@@ -52,16 +48,5 @@ public partial class MainWindow : Window
             return await reader.ReadToEndAsync();
         }
         catch { return null; }
-    }
-
-    protected override void OnClosing(WindowClosingEventArgs e)
-    {
-        if (DataContext is MainWindowViewModel vm && vm.Settings.MinimizeToTray)
-        {
-            e.Cancel = true;
-            Hide();
-            return;
-        }
-        base.OnClosing(e);
     }
 }

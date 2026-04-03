@@ -60,6 +60,26 @@
             <!-- ==================== TAB: Túneles ==================== -->
             <TabItem Header="Túneles">
                 <DockPanel>
+                    <!-- Toolbar: create/import buttons (only for AdvancedOperator+) -->
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8"
+                                Margin="0,8,0,10"
+                                IsVisible="{Binding IsAdvancedOperator}">
+                        <Button Command="{Binding NewTunnelCommand}"
+                                ToolTip.Tip="Crear nuevo túnel">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="＋" FontSize="13"/>
+                                <TextBlock Text="Nuevo túnel" FontSize="12"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding ImportTunnelFileCommand}"
+                                ToolTip.Tip="Importar configuración desde .conf">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="📂" FontSize="11"/>
+                                <TextBlock Text="Importar .conf" FontSize="12"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
                     <!-- Tunnel List with watermark background -->
                     <Grid>
                         <Image Source="/Assets/icon_256.png" Opacity="0.04"
@@ -196,67 +216,6 @@
                     </ScrollViewer>
                     </Grid>
                 </DockPanel>
-            </TabItem>
-
-            <!-- ==================== TAB: Importar/Editar Túnel ==================== -->
-            <TabItem x:DataType="vm:MainWindowViewModel"
-                     IsVisible="{Binding IsAdvancedOperator}">
-                <TabItem.Header>
-                    <TextBlock Text="{Binding ImportTunnel.TabTitle, FallbackValue='Importar'}"/>
-                </TabItem.Header>
-                <ScrollViewer>
-                    <StackPanel Spacing="12" Margin="0,8"
-                                DataContext="{Binding ImportTunnel}"
-                                x:DataType="vm:ImportTunnelViewModel">
-
-                        <TextBlock Text="Importar Túnel WireGuard" FontSize="16" FontWeight="SemiBold"/>
-
-                        <!-- Tunnel name -->
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Nombre del túnel" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBox Text="{Binding TunnelName}" Watermark="ej. oficina-vpn"/>
-                        </StackPanel>
-
-                        <!-- Conf content -->
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Configuración (contenido .conf)" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBox Text="{Binding ConfContent}" AcceptsReturn="True"
-                                     Height="200" Watermark="Pega aquí el contenido .conf..."
-                                     FontFamily="Consolas, Courier New, monospace" FontSize="12"/>
-                        </StackPanel>
-
-                        <!-- Validation message -->
-                        <Border Background="#0D2B1A" CornerRadius="4" Padding="8,6"
-                                IsVisible="{Binding IsValid}">
-                            <TextBlock Text="{Binding ValidationMessage}" Foreground="#86EFAC"
-                                       TextWrapping="Wrap" FontSize="12"/>
-                        </Border>
-                        <Border Background="#3D1010" CornerRadius="4" Padding="8,6"
-                                IsVisible="{Binding ValidationMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                            <TextBlock Text="{Binding ValidationMessage}" Foreground="#FCA5A5"
-                                       TextWrapping="Wrap" FontSize="12"
-                                       IsVisible="{Binding !IsValid}"/>
-                        </Border>
-
-                        <!-- Error message -->
-                        <Border Background="#3D1010" CornerRadius="4" Padding="8,6"
-                                IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FCA5A5"
-                                       TextWrapping="Wrap"/>
-                        </Border>
-
-                        <!-- Success message -->
-                        <Border Background="#0D2B1A" CornerRadius="4" Padding="8,6"
-                                IsVisible="{Binding ImportSuccess}">
-                            <TextBlock Text="Túnel importado correctamente." Foreground="#86EFAC"/>
-                        </Border>
-
-                        <Button Content="{Binding ButtonText, FallbackValue='Importar Túnel'}" Command="{Binding ImportCommand}"
-                                IsEnabled="{Binding !IsImporting}"
-                                HorizontalAlignment="Left"
-                                Classes="accent"/>
-                    </StackPanel>
-                </ScrollViewer>
             </TabItem>
 
             <!-- ==================== TAB: Auditoría ==================== -->
