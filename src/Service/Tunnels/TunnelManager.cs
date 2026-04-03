@@ -249,7 +249,8 @@ public sealed partial class TunnelManager : ITunnelManager
     private async Task RunWireGuardAsync(string arguments, CancellationToken ct)
     {
         if (!File.Exists(WireGuardExe))
-            throw new FileNotFoundException($"WireGuard executable not found at '{WireGuardExe}'.");
+            throw new InvalidOperationException(
+                "WireGuard no está instalado. Instálelo desde wireguard.com antes de continuar.");
 
         _logger.LogDebug("Running: wireguard.exe {Args}", arguments);
 

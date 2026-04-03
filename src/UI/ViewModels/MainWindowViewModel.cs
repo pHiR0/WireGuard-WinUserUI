@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -74,6 +75,11 @@ public partial class MainWindowViewModel : ViewModelBase
     // Bottom toolbar service status
     public string ServiceStatusColor => IsConnected ? "#4ADE80" : "#F87171";
     public string ServiceStatusText => IsConnected ? "Conectado al servicio" : "Desconectado del servicio";
+
+    // WireGuard installation check (well-known install path on Windows)
+    private static readonly string _wireGuardExePath =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WireGuard", "wireguard.exe");
+    public bool IsWireGuardInstalled => File.Exists(_wireGuardExePath);
 
     // Whether any tunnel is currently in Running state (used by tray icon)
     public bool AnyTunnelRunning => Tunnels.Any(t => t.Status == TunnelStatus.Running);
