@@ -33,20 +33,20 @@
                        TextWrapping="Wrap"/>
         </Border>
 
-        <!-- Not connected state -->
-        <Border IsVisible="{Binding !IsConnected}" VerticalAlignment="Center"
-                HorizontalAlignment="Center">
-            <StackPanel Spacing="8" HorizontalAlignment="Center">
-                <TextBlock Text="No conectado al servicio WireGuard"
-                           HorizontalAlignment="Center" Foreground="#94A3B8" FontSize="14"/>
-                <Button Content="Conectar" Command="{Binding ConnectCommand}"
-                        HorizontalAlignment="Center"/>
+        <!-- Bottom status toolbar -->
+        <Border DockPanel.Dock="Bottom" Background="#16213A"
+                Padding="12,5" Margin="-16,8,-16,-16">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Border Width="8" Height="8" CornerRadius="4"
+                        Background="{Binding ServiceStatusColor}"
+                        VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding ServiceStatusText}" FontSize="11"
+                           Foreground="#94A3B8" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
 
-        <!-- Main content (visible when connected) -->
-        <TabControl IsVisible="{Binding IsConnected}"
-                    SelectedIndex="{Binding SelectedTabIndex}">
+        <!-- Main content (always visible, commands guard when not connected) -->
+        <TabControl SelectedIndex="{Binding SelectedTabIndex}">
 
             <!-- ==================== TAB: Túneles ==================== -->
             <TabItem Header="Túneles">
@@ -98,6 +98,11 @@
                                                         CommandParameter="{Binding}"
                                                         IsVisible="{Binding CanStop}"
                                                         IsEnabled="{Binding !IsLoading}"/>
+                                                <Button Content="Editar"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).EditTunnelCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        IsEnabled="{Binding !IsLoading}"
+                                                        IsVisible="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).IsAdvancedOperator}"/>
                                                 <Button Content="Eliminar"
                                                         Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).DeleteTunnelCommand}"
                                                         CommandParameter="{Binding}"
@@ -119,9 +124,12 @@
                 </DockPanel>
             </TabItem>
 
-            <!-- ==================== TAB: Importar Túnel ==================== -->
-            <TabItem Header="Importar" x:DataType="vm:MainWindowViewModel"
+            <!-- ==================== TAB: Importar/Editar Túnel ==================== -->
+            <TabItem x:DataType="vm:MainWindowViewModel"
                      IsVisible="{Binding IsAdvancedOperator}">
+                <TabItem.Header>
+                    <TextBlock Text="{Binding ImportTunnel.TabTitle, FallbackValue='Importar'}"/>
+                </TabItem.Header>
                 <ScrollViewer>
                     <StackPanel Spacing="12" Margin="0,8"
                                 DataContext="{Binding ImportTunnel}"
@@ -169,7 +177,7 @@
                             <TextBlock Text="Túnel importado correctamente." Foreground="#86EFAC"/>
                         </Border>
 
-                        <Button Content="Importar Túnel" Command="{Binding ImportCommand}"
+                        <Button Content="{Binding ButtonText, FallbackValue='Importar Túnel'}" Command="{Binding ImportCommand}"
                                 IsEnabled="{Binding !IsImporting}"
                                 HorizontalAlignment="Left"
                                 Classes="accent"/>

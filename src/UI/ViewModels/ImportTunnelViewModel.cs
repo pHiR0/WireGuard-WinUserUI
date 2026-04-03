@@ -12,6 +12,13 @@ public partial class ImportTunnelViewModel : ViewModelBase
     private readonly IPipeClient _pipeClient;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TabTitle), nameof(ButtonText))]
+    private bool _isEditMode;
+
+    [ObservableProperty]
+    private string _originalTunnelName = string.Empty;
+
+    [ObservableProperty]
     private string _tunnelName = string.Empty;
 
     [ObservableProperty]
@@ -32,9 +39,36 @@ public partial class ImportTunnelViewModel : ViewModelBase
     [ObservableProperty]
     private bool _importSuccess;
 
+    public string TabTitle => IsEditMode ? "Editar" : "Importar";
+    public string ButtonText => IsEditMode ? "Guardar cambios" : "Importar Túnel";
+
     public ImportTunnelViewModel(IPipeClient pipeClient)
     {
         _pipeClient = pipeClient;
+    }
+
+    /// <summary>Prepares the form to edit an existing tunnel's configuration.</summary>
+    public void EnterEditMode(string tunnelName, string confContent)
+    {
+        IsEditMode = true;
+        OriginalTunnelName = tunnelName;
+        TunnelName = tunnelName;
+        ConfContent = confContent;
+        ImportSuccess = false;
+        ErrorMessage = string.Empty;
+        ValidateConf();
+    }
+
+    public void ResetToImportMode()
+    {
+        IsEditMode = false;
+        OriginalTunnelName = string.Empty;
+        TunnelName = string.Empty;
+        ConfContent = string.Empty;
+        ValidationMessage = string.Empty;
+        ImportSuccess = false;
+        ErrorMessage = string.Empty;
+        IsValid = false;
     }
 
     partial void OnConfContentChanged(string value)
@@ -79,12 +113,19 @@ public partial class ImportTunnelViewModel : ViewModelBase
             ErrorMessage = string.Empty;
             ImportSuccess = false;
 
-            await _pipeClient.ImportTunnelAsync(TunnelName.Trim(), ConfContent);
-            ImportSuccess = true;
-
-            // Reset form
-            TunnelName = string.Empty;
-            ConfContent = string.Empty;
+            if (IsEditMode)
+            {
+                await _pipeClient.EditTunnelAsync(OriginalTunnelName, ConfContent);
+                ImportSuccess = true;
+            }
+            else
+            {
+                await _pipeClient.ImportTunnelAsync(TunnelName.Trim(), ConfContent);
+                ImportSuccess = true;
+                // Reset form after import
+                TunnelName = string.Empty;
+                ConfContent = string.Empty;
+            }
         }
         catch (Exception ex)
         {
@@ -102,3 +143,4 @@ public partial class ImportTunnelViewModel : ViewModelBase
         ConfContent = content;
     }
 }
+
