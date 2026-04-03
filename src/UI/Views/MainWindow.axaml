@@ -90,36 +90,66 @@
                                             <!-- Action buttons -->
                                             <StackPanel Orientation="Horizontal" Spacing="6"
                                                         HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                <Button Content="Conectar"
-                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StartTunnelCommand}"
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StartTunnelCommand}"
                                                         CommandParameter="{Binding}"
                                                         IsVisible="{Binding CanStart}"
                                                         IsEnabled="{Binding !IsLoading}"
-                                                        Classes="accent"/>
-                                                <Button Content="Desconectar"
-                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StopTunnelCommand}"
+                                                        Classes="accent"
+                                                        ToolTip.Tip="Conectar">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <TextBlock Text="▶" FontSize="11"/>
+                                                        <TextBlock Text="Conectar" FontSize="12"/>
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StopTunnelCommand}"
                                                         CommandParameter="{Binding}"
                                                         IsVisible="{Binding CanStop}"
-                                                        IsEnabled="{Binding !IsLoading}"/>
-                                                <Button Content="Reiniciar"
-                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RestartTunnelCommand}"
+                                                        IsEnabled="{Binding !IsLoading}"
+                                                        ToolTip.Tip="Desconectar">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <TextBlock Text="⏹" FontSize="11"/>
+                                                        <TextBlock Text="Desconectar" FontSize="12"/>
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RestartTunnelCommand}"
                                                         CommandParameter="{Binding}"
                                                         IsVisible="{Binding CanStop}"
-                                                        IsEnabled="{Binding !IsLoading}"/>
-                                                <Button Content="Editar"
-                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).EditTunnelCommand}"
+                                                        IsEnabled="{Binding !IsLoading}"
+                                                        ToolTip.Tip="Reiniciar">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <TextBlock Text="↺" FontSize="11"/>
+                                                        <TextBlock Text="Reiniciar" FontSize="12"/>
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).EditTunnelCommand}"
                                                         CommandParameter="{Binding}"
                                                         IsEnabled="{Binding !IsLoading}"
-                                                        IsVisible="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).IsAdvancedOperator}"/>
-                                                <Button Content="Eliminar"
-                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).DeleteTunnelCommand}"
+                                                        IsVisible="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).IsAdvancedOperator}"
+                                                        ToolTip.Tip="Editar configuración">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <TextBlock Text="✏" FontSize="11"/>
+                                                        <TextBlock Text="Editar" FontSize="12"/>
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).DeleteTunnelCommand}"
                                                         CommandParameter="{Binding}"
                                                         IsEnabled="{Binding !IsLoading}"
-                                                        Foreground="#F87171"/>
-                                                <Button Content="Exportar"
-                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ExportTunnelCommand}"
+                                                        Foreground="#F87171"
+                                                        ToolTip.Tip="Eliminar túnel">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <TextBlock Text="🗑" FontSize="11"/>
+                                                        <TextBlock Text="Eliminar" FontSize="12"/>
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ExportTunnelCommand}"
                                                         CommandParameter="{Binding}"
-                                                        IsEnabled="{Binding !IsLoading}"/>
+                                                        IsEnabled="{Binding !IsLoading}"
+                                                        ToolTip.Tip="Exportar configuración">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <TextBlock Text="⬇" FontSize="11"/>
+                                                        <TextBlock Text="Exportar" FontSize="12"/>
+                                                    </StackPanel>
+                                                </Button>
                                                 <TextBlock Text="..." IsVisible="{Binding IsPending}"
                                                            VerticalAlignment="Center" Foreground="#94A3B8"/>
                                             </StackPanel>
