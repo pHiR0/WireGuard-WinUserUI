@@ -97,6 +97,8 @@ public partial class App : Application
         _mainWindow.Show();
         _mainWindow.WindowState = WindowState.Normal;
         _mainWindow.Activate();
+        // Refresh public IP when restoring from tray (rate-limited — won't flood on rapid show/hide)
+        _vm?.RequestPublicIpRefresh();
     }
 
     private void DisableAvaloniaDataAnnotationValidation()

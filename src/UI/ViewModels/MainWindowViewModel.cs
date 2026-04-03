@@ -16,6 +16,7 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IPipeClient _pipeClient;
     private readonly INotificationService _notifications;
+    private readonly PublicIpService _publicIpService = new();
     private CancellationTokenSource? _backgroundCts;
     private const int RefreshIntervalMs = 5000;
     private const int ReconnectIntervalMs = 1000;
@@ -46,6 +47,12 @@ public partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     private string? _lastExportedTunnelName;
+
+    [ObservableProperty]
+    private string _publicIp = "—";
+
+    [ObservableProperty]
+    private bool _isRefreshingPublicIp;
 
     public ObservableCollection<TunnelViewModel> Tunnels { get; } = [];
 
@@ -103,6 +110,7 @@ public partial class MainWindowViewModel : ViewModelBase
         // Start auto-connect + refresh background loop
         _backgroundCts = new CancellationTokenSource();
         _ = BackgroundLoopAsync(_backgroundCts.Token);
+        _ = DoRefreshPublicIpAsync(force: true);
     }
 
     private async Task BackgroundLoopAsync(CancellationToken ct)
@@ -163,13 +171,15 @@ public partial class MainWindowViewModel : ViewModelBase
                 var wasRunning = vm.Status == TunnelStatus.Running;
                 vm.UpdateFrom(info);
                 // Fire notifications on status transitions (only when notifications enabled)
-                if (Settings.EnableNotifications)
+                var transitioned = (!wasRunning && info.Status == TunnelStatus.Running)
+                                || (wasRunning && info.Status != TunnelStatus.Running);
+                if (Settings.EnableNotifications && transitioned)
                 {
-                    if (!wasRunning && info.Status == TunnelStatus.Running)
-                        _notifications.ShowTunnelConnected(info.Name);
-                    else if (wasRunning && info.Status != TunnelStatus.Running)
-                        _notifications.ShowTunnelDisconnected(info.Name);
+                    if (!wasRunning) _notifications.ShowTunnelConnected(info.Name);
+                    else            _notifications.ShowTunnelDisconnected(info.Name);
                 }
+                if (transitioned)
+                    _ = DoRefreshPublicIpAsync(force: true);
             }
             else
                 Tunnels.Add(new TunnelViewModel
@@ -310,6 +320,26 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public async Task RefreshPublicIpAsync() => await DoRefreshPublicIpAsync(force: true);
+
+    /// <summary>Rate-limited IP refresh — use when showing the window from tray.</summary>
+    public void RequestPublicIpRefresh() => _ = DoRefreshPublicIpAsync(force: false);
+
+    private async Task DoRefreshPublicIpAsync(bool force = false)
+    {
+        if (IsRefreshingPublicIp) return;
+        IsRefreshingPublicIp = true;
+        try
+        {
+            var ip = await _publicIpService.GetPublicIpAsync(force);
+            if (ip is not null)
+                PublicIp = ip;
+        }
+        catch { /* non-critical — keep existing value */ }
+        finally { IsRefreshingPublicIp = false; }
+    }
+
+    [RelayCommand]
     private void NewTunnel()
     {
         if (!IsConnected || !IsAdvancedOperator) return;
@@ -335,6 +365,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         _backgroundCts?.Cancel();
         _backgroundCts?.Dispose();
+        _publicIpService.Dispose();
         await _pipeClient.DisposeAsync();
     }
 }
