@@ -384,6 +384,27 @@ public partial class MainWindowViewModel : ViewModelBase
         OpenEditorRequested?.Invoke(editorVm);
     }
 
+    [RelayCommand]
+    private static void OpenGitHub()
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "https://github.com/pHiR0/WireGuard-WinUserUI",
+                UseShellExecute = true,
+            });
+        }
+        catch { /* ignore */ }
+    }
+
+    public static string AppVersion =>
+        System.Reflection.Assembly.GetEntryAssembly()
+            ?.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion
+        ?? System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString()
+        ?? "en desarrollo";
+
     public async ValueTask DisposeAsync()
     {
         _backgroundCts?.Cancel();

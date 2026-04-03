@@ -414,6 +414,72 @@
                 </ScrollViewer>
             </TabItem>
 
+            <!-- ==================== TAB: Acerca de ==================== -->
+            <TabItem x:DataType="vm:MainWindowViewModel">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="&#x2139;" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="Acerca de" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer Padding="16">
+                    <StackPanel Spacing="24" MaxWidth="520" HorizontalAlignment="Center">
+
+                        <!-- Logo + nombre -->
+                        <StackPanel Spacing="10" HorizontalAlignment="Center">
+                            <Image Source="/Assets/icon_32.png" Width="72" Height="72"
+                                   HorizontalAlignment="Center"/>
+                            <TextBlock Text="WireGuard Manager" FontSize="22" FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Interfaz de usuario para WireGuard en Windows"
+                                       FontSize="13" Foreground="#94A3B8"
+                                       HorizontalAlignment="Center" TextAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Info -->
+                        <Border Background="#252B3A" CornerRadius="8" Padding="16">
+                            <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto">
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Versión:"
+                                           Foreground="#94A3B8" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1"
+                                           Text="{Binding AppVersion}"
+                                           VerticalAlignment="Center"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Autor:"
+                                           Foreground="#94A3B8" Margin="0,8,0,0"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="pHiR0"
+                                           Margin="0,8,0,0" VerticalAlignment="Center"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Repositorio:"
+                                           Foreground="#94A3B8" Margin="0,8,0,0"
+                                           VerticalAlignment="Center"/>
+                                <Button Grid.Row="2" Grid.Column="1"
+                                        Command="{Binding OpenGitHubCommand}"
+                                        Margin="0,6,0,0" Padding="8,4"
+                                        ToolTip.Tip="https://github.com/pHiR0/WireGuard-WinUserUI">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="⬛" FontSize="12" VerticalAlignment="Center"/>
+                                        <TextBlock Text="GitHub — pHiR0/WireGuard-WinUserUI"
+                                                   FontSize="12" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Descripción -->
+                        <Border Background="#252B3A" CornerRadius="8" Padding="16">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Descripción" FontWeight="SemiBold" FontSize="14"/>
+                                <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="#CBD5E1"
+                                           Text="WireGuard Manager es una interfaz de usuario de escritorio para gestionar túneles WireGuard en Windows. Permite crear, editar, importar y monitorizar túneles VPN a través de un servicio Windows con control de acceso por roles (Admin, AdvancedOperator, Operator, Viewer)."/>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
         </TabControl>
     </DockPanel>
 </Window>
