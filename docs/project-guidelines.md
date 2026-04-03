@@ -13,6 +13,8 @@
 4. [RBAC Rules](#4-rbac-rules)
 5. [Testing Conventions](#5-testing-conventions)
 6. [Glossary](#6-glossary)
+7. [Versioning](#7-versioning)
+8. [Tunnel Editor](#8-tunnel-editor)
 
 ---
 
@@ -171,7 +173,60 @@ When adding a new `IpcCommand` value, **all of the following must be updated**:
 
 ---
 
-## 6. Glossary
+## 7. Versioning
+
+### Version Format
+
+Release version numbers follow the **date-based** format:
+
+```
+yyyy.MM.dd.HHmm
+```
+
+Examples:
+- `2026.04.04.1430` — built on 4 April 2026 at 14:30
+- `2026.12.01.0900` — built on 1 December 2026 at 09:00
+
+This format is used in all assembly versions, NuGet packages, and installer filenames. Set `<Version>` in each `.csproj` at build time.
+
+---
+
+## 8. Tunnel Editor
+
+### Overview
+
+The tunnel editor is a **modal dialog** (`TunnelEditorWindow`) used for creating new tunnels, importing `.conf` files, and editing existing tunnels.
+
+### Modes
+
+| Mode | TunnelEditorMode | Behaviour |
+|------|-----------------|-----------|
+| New | `New` | Name field editable; optional file picker ("Cargar .conf") |
+| Edit | `Edit` | Name field **read-only**; content pre-populated from export |
+
+### Access
+
+- Buttons "＋ Nuevo túnel" and "📂 Importar .conf" appear in the Túneles tab toolbar (visible only to `AdvancedOperator+`).
+- The "✏ Editar" button on each tunnel card also opens the editor in Edit mode.
+
+### Validation
+
+`WireGuardConfValidator.Validate(confContent)` runs on every content change (via `partial void OnConfContentChanged`). The Save button is disabled until `IsValid = true`.
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `src/UI/ViewModels/TunnelEditorViewModel.cs` | ViewModel with mode, validation, Save/Cancel/LoadFromFile commands |
+| `src/UI/Views/TunnelEditorWindow.axaml` | Dark modal dialog (680×560, `CenterOwner`) |
+| `src/UI/Views/TunnelEditorWindow.axaml.cs` | Code-behind: subscribes to `CloseRequested` and `PickFileRequested` events |
+
+### Name Immutability
+
+The tunnel name **cannot be changed after creation**. Both the UI (IsReadOnly) and the service (uses original name as dict key) enforce this. To rename a tunnel, delete it and create a new one.
+
+---
+
 
 | Term | Definition |
 |------|-----------|
