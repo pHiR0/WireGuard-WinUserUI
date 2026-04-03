@@ -65,6 +65,7 @@
                                 <DataTemplate x:DataType="vm:TunnelViewModel">
                                     <Border Background="#252B3A" CornerRadius="8"
                                             Padding="16,12" Margin="0,0,0,8">
+                                        <StackPanel>
                                         <DockPanel>
                                             <!-- Status indicator + Name -->
                                             <StackPanel Orientation="Horizontal" Spacing="10"
@@ -116,6 +117,41 @@
                                                            VerticalAlignment="Center" Foreground="#94A3B8"/>
                                             </StackPanel>
                                         </DockPanel>
+
+                                        <!-- Detalles del túnel (visibles cuando está conectado y hay datos) -->
+                                        <Border Margin="20,6,0,0"
+                                                IsVisible="{Binding HasDetails}">
+                                            <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="IP del túnel:"
+                                                           FontSize="11" Foreground="#94A3B8"
+                                                           IsVisible="{Binding TunnelAddress, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TunnelAddress}"
+                                                           FontSize="11"
+                                                           IsVisible="{Binding TunnelAddress, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Endpoint:"
+                                                           FontSize="11" Foreground="#94A3B8"
+                                                           IsVisible="{Binding Endpoint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Endpoint}"
+                                                           FontSize="11"
+                                                           IsVisible="{Binding Endpoint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Último contacto:"
+                                                           FontSize="11" Foreground="#94A3B8"
+                                                           IsVisible="{Binding LastHandshake, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding LastHandshake}"
+                                                           FontSize="11"
+                                                           IsVisible="{Binding LastHandshake, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Tráfico:"
+                                                           FontSize="11" Foreground="#94A3B8"
+                                                           IsVisible="{Binding TransferText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding TransferText}"
+                                                           FontSize="11"
+                                                           IsVisible="{Binding TransferText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

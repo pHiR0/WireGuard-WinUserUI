@@ -38,11 +38,24 @@ public sealed partial class TunnelManager : ITunnelManager
                     continue;
 
                 var tunnelName = svc.ServiceName[TunnelServicePrefix.Length..];
+                var status = MapStatus(svc);
+
+                // Fetch live stats from wg.exe when the tunnel is running
+                string? address = null, endpoint = null, handshake = null;
+                long rxBytes = 0, txBytes = 0;
+                if (status == TunnelStatus.Running)
+                    (address, endpoint, handshake, rxBytes, txBytes) = WireGuardStats.GetStats(tunnelName, _logger);
+
                 tunnels.Add(new TunnelInfo
                 {
                     Name = tunnelName,
-                    Status = MapStatus(svc),
+                    Status = status,
                     LastChecked = DateTimeOffset.UtcNow,
+                    TunnelAddress = address,
+                    Endpoint = endpoint,
+                    LastHandshake = handshake,
+                    RxBytes = rxBytes,
+                    TxBytes = txBytes,
                 });
             }
         }

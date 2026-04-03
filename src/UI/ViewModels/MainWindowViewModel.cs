@@ -140,7 +140,17 @@ public partial class MainWindowViewModel : ViewModelBase
             if (byName.TryGetValue(info.Name, out var vm))
                 vm.UpdateFrom(info);
             else
-                Tunnels.Add(new TunnelViewModel { Name = info.Name, Status = info.Status, LastChecked = info.LastChecked });
+                Tunnels.Add(new TunnelViewModel
+                {
+                    Name = info.Name,
+                    Status = info.Status,
+                    LastChecked = info.LastChecked,
+                    TunnelAddress = info.TunnelAddress,
+                    Endpoint = info.Endpoint,
+                    LastHandshake = info.LastHandshake,
+                    RxBytes = info.RxBytes,
+                    TxBytes = info.TxBytes,
+                });
         }
     }
 
