@@ -21,6 +21,8 @@
         <!-- Header -->
         <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
             <DockPanel>
+                <Image Source="/Assets/icon_32.png" Width="28" Height="28"
+                       VerticalAlignment="Center" Margin="0,0,10,0"/>
                 <TextBlock Text="WireGuard Manager" FontSize="22" FontWeight="Bold"
                            VerticalAlignment="Center"/>
             </DockPanel>
@@ -88,7 +90,13 @@
         <TabControl SelectedIndex="{Binding SelectedTabIndex}">
 
             <!-- ==================== TAB: Túneles ==================== -->
-            <TabItem Header="Túneles">
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="&#x1F5A7;" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="Túneles" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
                 <DockPanel>
                     <!-- Toolbar: create/import buttons (only for AdvancedOperator+) -->
                     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8"
@@ -249,8 +257,14 @@
             </TabItem>
 
             <!-- ==================== TAB: Auditoría ==================== -->
-            <TabItem Header="Auditoría" x:DataType="vm:MainWindowViewModel"
+            <TabItem x:DataType="vm:MainWindowViewModel"
                      IsVisible="{Binding IsAdmin}">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="&#x1F4CB;" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="Auditoría" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
                 <DockPanel DataContext="{Binding AuditLog}"
                            x:DataType="vm:AuditLogViewModel">
 
@@ -322,7 +336,13 @@
             </TabItem>
 
             <!-- ==================== TAB: Configuración ==================== -->
-            <TabItem Header="Configuración">
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="&#x2699;" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="Configuración" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
                 <ScrollViewer>
                     <StackPanel Spacing="16" Margin="0,8"
                                 DataContext="{Binding Settings}"
