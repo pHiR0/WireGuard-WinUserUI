@@ -8,6 +8,7 @@
         x:Class="WireGuard.UI.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="WireGuard Manager"
+        Icon="/Assets/icon.ico"
         Width="900" Height="600"
         MinWidth="720" MinHeight="500"
         RequestedThemeVariant="Dark">
