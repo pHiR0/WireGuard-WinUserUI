@@ -6,13 +6,13 @@ namespace WireGuard.Service;
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
-    private readonly IRoleStore _roleStore;
+    private readonly WindowsGroupProvisioner _groupProvisioner;
     private readonly PipeServer _pipeServer;
 
-    public Worker(ILogger<Worker> logger, IRoleStore roleStore, RequestHandler requestHandler)
+    public Worker(ILogger<Worker> logger, WindowsGroupProvisioner groupProvisioner, RequestHandler requestHandler)
     {
         _logger = logger;
-        _roleStore = roleStore;
+        _groupProvisioner = groupProvisioner;
         _pipeServer = new PipeServer(requestHandler, logger);
     }
 
@@ -20,15 +20,16 @@ public class Worker : BackgroundService
     {
         _logger.LogInformation("WireGuard-WinUserUI service starting");
 
-        var users = await _roleStore.ListUsersAsync(stoppingToken);
-        if (users.Count == 0)
-        {
-            _logger.LogWarning(
-                "No users are configured. Run the following command (as admin) to add the first admin user:{NewLine}" +
-                "  dotnet run --project src/Service -- --add-admin <windowsUsername>",
-                Environment.NewLine);
-        }
+        // Ensure the Windows groups exist before accepting connections
+        _groupProvisioner.EnsureGroupsExist();
+        _logger.LogInformation(
+            "Roles gestionados via grupos de Windows: '{A}', '{Ao}', '{O}', '{V}'",
+            WindowsGroupRoleStore.GroupAdministrator,
+            WindowsGroupRoleStore.GroupAdvancedOperator,
+            WindowsGroupRoleStore.GroupOperator,
+            WindowsGroupRoleStore.GroupViewer);
 
         await _pipeServer.RunAsync(stoppingToken);
     }
 }
+

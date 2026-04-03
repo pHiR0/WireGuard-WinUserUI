@@ -59,7 +59,6 @@ public partial class MainWindowViewModel : ViewModelBase
     public string ServiceStatusText => IsConnected ? "Conectado al servicio" : "Desconectado del servicio";
 
     // Sub-ViewModels for tabs
-    public UserManagementViewModel UserManagement { get; }
     public AuditLogViewModel AuditLog { get; }
     public ImportTunnelViewModel ImportTunnel { get; }
     public SettingsViewModel Settings { get; }
@@ -70,7 +69,6 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         _pipeClient = pipeClient;
         _notifications = notifications ?? new WindowsNotificationService();
-        UserManagement = new UserManagementViewModel(pipeClient);
         AuditLog = new AuditLogViewModel(pipeClient);
         ImportTunnel = new ImportTunnelViewModel(pipeClient);
         Settings = new SettingsViewModel();
