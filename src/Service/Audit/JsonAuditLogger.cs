@@ -15,6 +15,11 @@ public sealed class JsonAuditLogger : IAuditLogger
     private readonly ILogger<JsonAuditLogger> _logger;
     private readonly SemaphoreSlim _lock = new(1, 1);
 
+    private const int MaxEntries = 10_000;
+    private const int TrimCheckInterval = 500;
+    private int _writeCount;
+    private bool _initialTrimDone;
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -37,7 +42,17 @@ public sealed class JsonAuditLogger : IAuditLogger
         await _lock.WaitAsync(ct);
         try
         {
+            if (!_initialTrimDone)
+            {
+                _initialTrimDone = true;
+                await TrimFileAsync(ct);
+            }
+
             await File.AppendAllTextAsync(_filePath, line + Environment.NewLine, ct);
+
+            _writeCount++;
+            if (_writeCount % TrimCheckInterval == 0)
+                await TrimFileAsync(ct);
         }
         catch (Exception ex)
         {
@@ -46,6 +61,22 @@ public sealed class JsonAuditLogger : IAuditLogger
         finally
         {
             _lock.Release();
+        }
+    }
+
+    private async Task TrimFileAsync(CancellationToken ct)
+    {
+        try
+        {
+            if (!File.Exists(_filePath)) return;
+            var lines = await File.ReadAllLinesAsync(_filePath, ct);
+            if (lines.Length <= MaxEntries) return;
+            var trimmed = lines[^MaxEntries..];
+            await File.WriteAllLinesAsync(_filePath, trimmed, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to trim audit log");
         }
     }
 
