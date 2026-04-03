@@ -322,6 +322,63 @@
                 </DockPanel>
             </TabItem>
 
+            <!-- ==================== TAB: Configuración ==================== -->
+            <TabItem Header="Configuración">
+                <ScrollViewer>
+                    <StackPanel Spacing="16" Margin="0,8"
+                                DataContext="{Binding Settings}"
+                                x:DataType="vm:SettingsViewModel">
+
+                        <TextBlock Text="Configuración de la aplicación" FontSize="16" FontWeight="SemiBold"/>
+
+                        <!-- Intervalo de actualización -->
+                        <Border Background="#252B3A" CornerRadius="8" Padding="16">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Actualización automática" FontWeight="SemiBold" FontSize="14"/>
+                                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                    <TextBlock Text="Intervalo (segundos):" FontSize="13" VerticalAlignment="Center"/>
+                                    <NumericUpDown Value="{Binding RefreshIntervalSeconds}"
+                                                  Minimum="1" Maximum="300" Increment="1"
+                                                  Width="100"/>
+                                </StackPanel>
+                                <TextBlock Text="Define cada cuántos segundos se actualiza la lista de túneles."
+                                           FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Notificaciones -->
+                        <Border Background="#252B3A" CornerRadius="8" Padding="16">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Notificaciones" FontWeight="SemiBold" FontSize="14"/>
+                                <CheckBox Content="Activar notificaciones de Windows cuando un túnel se conecta o desconecta"
+                                          IsChecked="{Binding EnableNotifications}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Bandeja del sistema -->
+                        <Border Background="#252B3A" CornerRadius="8" Padding="16">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Bandeja del sistema" FontWeight="SemiBold" FontSize="14"/>
+                                <CheckBox Content="Minimizar a la bandeja del sistema en lugar de cerrar"
+                                          IsChecked="{Binding MinimizeToTray}"/>
+                                <CheckBox Content="Iniciar minimizado en la bandeja"
+                                          IsChecked="{Binding StartMinimized}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Guardar -->
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Button Content="Guardar configuración" Command="{Binding SaveCommand}"
+                                    Classes="accent"/>
+                            <TextBlock Text="{Binding SavedMessage}" VerticalAlignment="Center"
+                                       Foreground="#86EFAC" FontSize="12"
+                                       IsVisible="{Binding SavedMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                        </StackPanel>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
         </TabControl>
     </DockPanel>
 </Window>

@@ -61,6 +61,7 @@ public partial class MainWindowViewModel : ViewModelBase
     public UserManagementViewModel UserManagement { get; }
     public AuditLogViewModel AuditLog { get; }
     public ImportTunnelViewModel ImportTunnel { get; }
+    public SettingsViewModel Settings { get; }
 
     public MainWindowViewModel() : this(new PipeClient()) { }
 
@@ -70,6 +71,7 @@ public partial class MainWindowViewModel : ViewModelBase
         UserManagement = new UserManagementViewModel(pipeClient);
         AuditLog = new AuditLogViewModel(pipeClient);
         ImportTunnel = new ImportTunnelViewModel(pipeClient);
+        Settings = new SettingsViewModel();
 
         pipeClient.Disconnected += () =>
             Dispatcher.UIThread.Post(() => { IsConnected = false; Tunnels.Clear(); });
@@ -114,7 +116,9 @@ public partial class MainWindowViewModel : ViewModelBase
             catch (OperationCanceledException) { break; }
             catch { /* conexión no disponible, reintentar */ }
 
-            var delay = IsConnected ? RefreshIntervalMs : ReconnectIntervalMs;
+            var delay = IsConnected
+                ? (Settings?.RefreshIntervalSeconds ?? 5) * 1000
+                : ReconnectIntervalMs;
             try { await Task.Delay(delay, ct); }
             catch (OperationCanceledException) { break; }
         }
