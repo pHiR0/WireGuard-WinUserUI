@@ -38,24 +38,18 @@
         <Border DockPanel.Dock="Bottom" Background="#16213A"
                 Padding="12,5" Margin="-16,8,-16,-16">
             <DockPanel>
-                <!-- Right side: user + role -->
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6"
-                            VerticalAlignment="Center"
-                            IsVisible="{Binding IsConnected}">
-                    <TextBlock Text="{Binding CurrentUser}" FontSize="11"
-                               Foreground="#94A3B8" VerticalAlignment="Center"/>
-                    <Border Background="#1E3A5F" CornerRadius="4" Padding="6,2">
-                        <TextBlock Text="{Binding CurrentRoleText}" FontSize="11"
-                                   Foreground="#60A5FA" VerticalAlignment="Center"/>
-                    </Border>
-                </StackPanel>
-                <!-- Left side: service connection status -->
+                <!-- Right side: role badge only -->
+                <Border DockPanel.Dock="Right" Background="#1E3A5F" CornerRadius="4" Padding="6,2"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding IsConnected}">
+                    <TextBlock Text="{Binding CurrentRoleText}" FontSize="11"
+                               Foreground="#60A5FA" VerticalAlignment="Center"/>
+                </Border>
+                <!-- Left side: connection dot only -->
                 <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <Border Width="8" Height="8" CornerRadius="4"
                             Background="{Binding ServiceStatusColor}"
                             VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding ServiceStatusText}" FontSize="11"
-                               Foreground="#94A3B8" VerticalAlignment="Center"/>
                 </StackPanel>
             </DockPanel>
         </Border>
