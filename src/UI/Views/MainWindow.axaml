@@ -1,0 +1,340 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:WireGuard.UI.ViewModels"
+        xmlns:models="using:WireGuard.Shared.Models"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="WireGuard.UI.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="WireGuard Manager"
+        Width="800" Height="600"
+        MinWidth="600" MinHeight="400"
+        RequestedThemeVariant="Dark">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <DockPanel Margin="16">
+        <!-- Header -->
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <DockPanel>
+                <TextBlock Text="WireGuard Manager" FontSize="22" FontWeight="Bold"
+                           VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                            VerticalAlignment="Center" Spacing="8">
+                    <Border Background="#4ADE80"
+                            CornerRadius="6" Width="12" Height="12"
+                            IsVisible="{Binding IsConnected}"/>
+                    <TextBlock Text="{Binding ConnectionStatus}" VerticalAlignment="Center"
+                               Foreground="#94A3B8" FontSize="12"/>
+                </StackPanel>
+            </DockPanel>
+
+            <!-- User info bar -->
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,4,0,0"
+                        IsVisible="{Binding IsConnected}">
+                <TextBlock Foreground="#94A3B8" FontSize="12">
+                    <Run Text="User: "/>
+                    <Run Text="{Binding CurrentUser}" FontWeight="SemiBold"/>
+                </TextBlock>
+                <TextBlock Foreground="#94A3B8" FontSize="12">
+                    <Run Text="Role: "/>
+                    <Run Text="{Binding CurrentRole}" FontWeight="SemiBold"/>
+                </TextBlock>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Error banner -->
+        <Border DockPanel.Dock="Top" Background="#3D1010" CornerRadius="4"
+                Padding="12,8" Margin="0,0,0,8"
+                IsVisible="{Binding HasError}">
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FCA5A5"
+                       TextWrapping="Wrap"/>
+        </Border>
+
+        <!-- Not connected state -->
+        <Border IsVisible="{Binding !IsConnected}" VerticalAlignment="Center"
+                HorizontalAlignment="Center">
+            <StackPanel Spacing="8" HorizontalAlignment="Center">
+                <TextBlock Text="Not connected to the WireGuard service"
+                           HorizontalAlignment="Center" Foreground="#94A3B8" FontSize="14"/>
+                <Button Content="Connect" Command="{Binding ConnectCommand}"
+                        HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main content (visible when connected) -->
+        <TabControl IsVisible="{Binding IsConnected}"
+                    SelectedIndex="{Binding SelectedTabIndex}">
+
+            <!-- ==================== TAB: Tunnels ==================== -->
+            <TabItem Header="Tunnels">
+                <DockPanel>
+                    <!-- Toolbar -->
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8"
+                                Margin="0,8,0,12">
+                        <Button Content="Refresh" Command="{Binding RefreshTunnelsCommand}"
+                                IsEnabled="{Binding !IsRefreshing}"/>
+                    </StackPanel>
+
+                    <!-- Tunnel List -->
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding Tunnels}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TunnelViewModel">
+                                    <Border Background="#252B3A" CornerRadius="8"
+                                            Padding="16,12" Margin="0,0,0,8">
+                                        <DockPanel>
+                                            <!-- Status indicator + Name -->
+                                            <StackPanel Orientation="Horizontal" Spacing="10"
+                                                        VerticalAlignment="Center">
+                                                <Border Width="10" Height="10" CornerRadius="5"
+                                                        Background="{Binding StatusColor}"/>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                               FontSize="14"/>
+                                                    <TextBlock Text="{Binding StatusText}" FontSize="12"
+                                                               Foreground="#94A3B8"/>
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <!-- Action buttons -->
+                                            <StackPanel Orientation="Horizontal" Spacing="6"
+                                                        HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                <Button Content="Connect"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StartTunnelCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        IsVisible="{Binding CanStart}"
+                                                        IsEnabled="{Binding !IsLoading}"
+                                                        Classes="accent"/>
+                                                <Button Content="Disconnect"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StopTunnelCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        IsVisible="{Binding CanStop}"
+                                                        IsEnabled="{Binding !IsLoading}"/>
+                                                <Button Content="Restart"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RestartTunnelCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        IsVisible="{Binding CanStop}"
+                                                        IsEnabled="{Binding !IsLoading}"/>
+                                                <Button Content="Delete"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).DeleteTunnelCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        IsEnabled="{Binding !IsLoading}"
+                                                        Foreground="#F87171"/>
+                                                <Button Content="Export"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ExportTunnelCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        IsEnabled="{Binding !IsLoading}"/>
+                                                <TextBlock Text="..." IsVisible="{Binding IsPending}"
+                                                           VerticalAlignment="Center" Foreground="#94A3B8"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </TabItem>
+
+            <!-- ==================== TAB: Import Tunnel ==================== -->
+            <TabItem Header="Import" x:DataType="vm:MainWindowViewModel"
+                     IsVisible="{Binding IsAdvancedOperator}">
+                <ScrollViewer>
+                    <StackPanel Spacing="12" Margin="0,8"
+                                DataContext="{Binding ImportTunnel}"
+                                x:DataType="vm:ImportTunnelViewModel">
+
+                        <TextBlock Text="Import WireGuard Tunnel" FontSize="16" FontWeight="SemiBold"/>
+
+                        <!-- Tunnel name -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Tunnel Name" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBox Text="{Binding TunnelName}" Watermark="e.g. office-vpn"/>
+                        </StackPanel>
+
+                        <!-- Conf content -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Configuration (.conf content)" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBox Text="{Binding ConfContent}" AcceptsReturn="True"
+                                     Height="200" Watermark="Paste .conf content here..."
+                                     FontFamily="Consolas, Courier New, monospace" FontSize="12"/>
+                        </StackPanel>
+
+                        <!-- Validation message -->
+                        <Border Background="#0D2B1A" CornerRadius="4" Padding="8,6"
+                                IsVisible="{Binding IsValid}">
+                            <TextBlock Text="{Binding ValidationMessage}" Foreground="#86EFAC"
+                                       TextWrapping="Wrap" FontSize="12"/>
+                        </Border>
+                        <Border Background="#3D1010" CornerRadius="4" Padding="8,6"
+                                IsVisible="{Binding ValidationMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                            <TextBlock Text="{Binding ValidationMessage}" Foreground="#FCA5A5"
+                                       TextWrapping="Wrap" FontSize="12"
+                                       IsVisible="{Binding !IsValid}"/>
+                        </Border>
+
+                        <!-- Error message -->
+                        <Border Background="#3D1010" CornerRadius="4" Padding="8,6"
+                                IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FCA5A5"
+                                       TextWrapping="Wrap"/>
+                        </Border>
+
+                        <!-- Success message -->
+                        <Border Background="#0D2B1A" CornerRadius="4" Padding="8,6"
+                                IsVisible="{Binding ImportSuccess}">
+                            <TextBlock Text="Tunnel imported successfully!" Foreground="#86EFAC"/>
+                        </Border>
+
+                        <Button Content="Import Tunnel" Command="{Binding ImportCommand}"
+                                IsEnabled="{Binding !IsImporting}"
+                                HorizontalAlignment="Left"
+                                Classes="accent"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ==================== TAB: Users ==================== -->
+            <TabItem Header="Users" x:DataType="vm:MainWindowViewModel"
+                     IsVisible="{Binding IsAdmin}">
+                <DockPanel DataContext="{Binding UserManagement}"
+                           x:DataType="vm:UserManagementViewModel">
+
+                    <!-- Error -->
+                    <Border DockPanel.Dock="Top" Background="#3D1010" CornerRadius="4"
+                            Padding="12,8" Margin="0,8,0,8"
+                            IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock Text="{Binding ErrorMessage}" Foreground="#FCA5A5" TextWrapping="Wrap"/>
+                    </Border>
+
+                    <!-- Add user form -->
+                    <Border DockPanel.Dock="Top" Background="#252B3A" CornerRadius="8"
+                            Padding="12" Margin="0,0,0,12">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Add User" FontWeight="SemiBold" FontSize="14"/>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBox Text="{Binding NewUsername}" Watermark="Windows username" Width="200"/>
+                                <ComboBox ItemsSource="{Binding AvailableRoles}" SelectedItem="{Binding NewUserRole}" Width="160"/>
+                                <Button Content="Add" Command="{Binding AddUserCommand}"
+                                        Classes="accent"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Toolbar -->
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                        <Button Content="Refresh Users" Command="{Binding LoadUsersCommand}"
+                                IsEnabled="{Binding !IsLoading}"/>
+                    </StackPanel>
+
+                    <!-- User list -->
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding Users}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:UserViewModel">
+                                    <Border Background="#252B3A" CornerRadius="8"
+                                            Padding="16,10" Margin="0,0,0,6">
+                                        <DockPanel>
+                                            <TextBlock Text="{Binding Username}" FontWeight="SemiBold"
+                                                       FontSize="14" VerticalAlignment="Center"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="8"
+                                                        HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                <ComboBox ItemsSource="{Binding $parent[ItemsControl].((vm:UserManagementViewModel)DataContext).AvailableRoles}"
+                                                          SelectedItem="{Binding Role}" Width="150"/>
+                                                <Button Content="Save"
+                                                        Command="{Binding $parent[ItemsControl].((vm:UserManagementViewModel)DataContext).ChangeRoleCommand}"
+                                                        CommandParameter="{Binding}"/>
+                                                <Button Content="Remove"
+                                                        Command="{Binding $parent[ItemsControl].((vm:UserManagementViewModel)DataContext).RemoveUserCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Foreground="#F87171"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </TabItem>
+
+            <!-- ==================== TAB: Audit Log ==================== -->
+            <TabItem Header="Audit" x:DataType="vm:MainWindowViewModel"
+                     IsVisible="{Binding IsAdmin}">
+                <DockPanel DataContext="{Binding AuditLog}"
+                           x:DataType="vm:AuditLogViewModel">
+
+                    <!-- Error -->
+                    <Border DockPanel.Dock="Top" Background="#3D1010" CornerRadius="4"
+                            Padding="12,8" Margin="0,8,0,8"
+                            IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock Text="{Binding ErrorMessage}" Foreground="#FCA5A5" TextWrapping="Wrap"/>
+                    </Border>
+
+                    <!-- Filters -->
+                    <Border DockPanel.Dock="Top" Background="#252B3A" CornerRadius="8"
+                            Padding="12" Margin="0,0,0,8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBox Text="{Binding FilterUsername}" Watermark="Filter by user" Width="150"/>
+                            <TextBox Text="{Binding FilterAction}" Watermark="Filter by action" Width="150"/>
+                            <Button Content="Apply" Command="{Binding ApplyFilterCommand}"/>
+                            <Button Content="Refresh" Command="{Binding LoadCommand}"
+                                    IsEnabled="{Binding !IsLoading}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Pagination -->
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8"
+                                HorizontalAlignment="Center" Margin="0,8,0,0">
+                        <Button Content="Previous" Command="{Binding PreviousPageCommand}"
+                                IsEnabled="{Binding CanGoBack}"/>
+                        <TextBlock VerticalAlignment="Center" FontSize="12">
+                            <Run Text="Page "/>
+                            <Run Text="{Binding CurrentPage}"/>
+                            <Run Text=" of "/>
+                            <Run Text="{Binding TotalPages}"/>
+                            <Run Text=" ("/>
+                            <Run Text="{Binding TotalCount}"/>
+                            <Run Text=" entries)"/>
+                        </TextBlock>
+                        <Button Content="Next" Command="{Binding NextPageCommand}"
+                                IsEnabled="{Binding CanGoForward}"/>
+                    </StackPanel>
+
+                    <!-- Audit entries -->
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding Entries}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:AuditEntryDto">
+                                    <Border Background="#252B3A" CornerRadius="6"
+                                            Padding="12,8" Margin="0,0,0,4">
+                                        <DockPanel>
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                                    <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
+                                                               FontSize="11" Foreground="#94A3B8" Width="130"/>
+                                                    <TextBlock Text="{Binding Username}" FontWeight="SemiBold" FontSize="12" Width="120"/>
+                                                    <TextBlock Text="{Binding Action}" FontSize="12" Width="130"/>
+                                                    <TextBlock Text="{Binding Tunnel}" FontSize="12" Foreground="#94A3B8" Width="120"/>
+                                                    <TextBlock Text="{Binding Result}" FontSize="12" FontWeight="SemiBold"/>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Error}" FontSize="11" Foreground="#FB923C"
+                                                           IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                                           TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </TabItem>
+
+        </TabControl>
+    </DockPanel>
+</Window>

@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0C3CDA04-CFAC-4080-9208-8E1606BBA864}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WireGuard.Shared", "src\Shared\WireGuard.Shared.csproj", "{D7BC20DA-3B9E-42AA-B1DF-7FEA596E1528}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WireGuard.Service", "src\Service\WireGuard.Service.csproj", "{3E977EA3-853E-4C44-9A22-430EE905B5A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WireGuard.UI", "src\UI\WireGuard.UI.csproj", "{4E72974E-0B6A-43B2-8BEA-88B6059A0A0F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{BED73C6F-64F1-4412-A3AB-60796F9CFC63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WireGuard.Service.Tests", "tests\Service.Tests\WireGuard.Service.Tests.csproj", "{A8B896DC-89C2-4180-B3C2-F4A2AA655860}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WireGuard.UI.Tests", "tests\UI.Tests\WireGuard.UI.Tests.csproj", "{4821A9A8-4717-44DB-A170-5D8DA636641D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D7BC20DA-3B9E-42AA-B1DF-7FEA596E1528}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7BC20DA-3B9E-42AA-B1DF-7FEA596E1528}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7BC20DA-3B9E-42AA-B1DF-7FEA596E1528}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7BC20DA-3B9E-42AA-B1DF-7FEA596E1528}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E977EA3-853E-4C44-9A22-430EE905B5A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E977EA3-853E-4C44-9A22-430EE905B5A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E977EA3-853E-4C44-9A22-430EE905B5A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E977EA3-853E-4C44-9A22-430EE905B5A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E72974E-0B6A-43B2-8BEA-88B6059A0A0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E72974E-0B6A-43B2-8BEA-88B6059A0A0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E72974E-0B6A-43B2-8BEA-88B6059A0A0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E72974E-0B6A-43B2-8BEA-88B6059A0A0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8B896DC-89C2-4180-B3C2-F4A2AA655860}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8B896DC-89C2-4180-B3C2-F4A2AA655860}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8B896DC-89C2-4180-B3C2-F4A2AA655860}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8B896DC-89C2-4180-B3C2-F4A2AA655860}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4821A9A8-4717-44DB-A170-5D8DA636641D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4821A9A8-4717-44DB-A170-5D8DA636641D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4821A9A8-4717-44DB-A170-5D8DA636641D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4821A9A8-4717-44DB-A170-5D8DA636641D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D7BC20DA-3B9E-42AA-B1DF-7FEA596E1528} = {0C3CDA04-CFAC-4080-9208-8E1606BBA864}
+		{3E977EA3-853E-4C44-9A22-430EE905B5A8} = {0C3CDA04-CFAC-4080-9208-8E1606BBA864}
+		{4E72974E-0B6A-43B2-8BEA-88B6059A0A0F} = {0C3CDA04-CFAC-4080-9208-8E1606BBA864}
+		{A8B896DC-89C2-4180-B3C2-F4A2AA655860} = {BED73C6F-64F1-4412-A3AB-60796F9CFC63}
+		{4821A9A8-4717-44DB-A170-5D8DA636641D} = {BED73C6F-64F1-4412-A3AB-60796F9CFC63}
+	EndGlobalSection
+EndGlobal
