@@ -13,7 +13,7 @@ jobs:
   mirror:
     name: Sincronizar main con WireGuard-WinUserUI (público)
     runs-on: ubuntu-latest
-    if: github.repository == 'pHiR0/WireGuard-WinUserUI-dev'
+    if: github.repository != 'pHiR0/WireGuard-WinUserUI'
 
     steps:
       - name: Checkout completo (con historial)
