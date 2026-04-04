@@ -1,4 +1,7 @@
 using System.Diagnostics;
+using System.IO;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.ServiceProcess;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
@@ -153,6 +156,7 @@ public sealed partial class TunnelManager : ITunnelManager
 
         Directory.CreateDirectory(WireGuardConfDir);
         await File.WriteAllTextAsync(confPath, confContent, ct);
+        SecureConfFile(confPath);
         _logger.LogInformation("Wrote conf for tunnel '{Name}' to '{Path}'", name, confPath);
 
         // Install as a WireGuard tunnel service
@@ -213,6 +217,7 @@ public sealed partial class TunnelManager : ITunnelManager
         }
 
         await File.WriteAllTextAsync(confPath, confContent, ct);
+        SecureConfFile(confPath);
         await RunWireGuardAsync($"/installtunnelservice \"{confPath}\"", ct);
 
         // Restore the startup type the service had before the edit (re-install defaults to Auto)
@@ -269,6 +274,41 @@ public sealed partial class TunnelManager : ITunnelManager
 
     private static string GetConfPath(string tunnelName)
         => Path.Combine(WireGuardConfDir, $"{tunnelName}.conf");
+
+    /// <summary>
+    /// Locks the conf file so only SYSTEM and BUILTIN\Administrators have access,
+    /// preventing regular users from reading the private key.
+    /// </summary>
+    private void SecureConfFile(string path)
+    {
+        try
+        {
+            var fs = new FileSecurity(path, AccessControlSections.Access);
+            // Remove inherited rules and start clean
+            fs.SetAccessRuleProtection(isProtected: true, preserveInheritance: false);
+            foreach (FileSystemAccessRule rule in fs.GetAccessRules(true, true, typeof(SecurityIdentifier)))
+                fs.RemoveAccessRule(rule);
+
+            // SYSTEM: FullControl
+            fs.AddAccessRule(new FileSystemAccessRule(
+                new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null),
+                FileSystemRights.FullControl,
+                AccessControlType.Allow));
+
+            // BUILTIN\Administrators: FullControl
+            fs.AddAccessRule(new FileSystemAccessRule(
+                new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null),
+                FileSystemRights.FullControl,
+                AccessControlType.Allow));
+
+            new FileInfo(path).SetAccessControl(fs);
+            _logger.LogDebug("Secured ACL on conf file '{Path}'", path);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to set ACL on conf file '{Path}'", path);
+        }
+    }
 
     /// <summary>Returns true if the service is configured for Automatic start.</summary>
     private static bool GetServiceAutoStart(string serviceName)
