@@ -18,6 +18,12 @@ public partial class App : Application
     private MainWindowViewModel? _vm;
     private MainWindow? _mainWindow;
 
+    /// <summary>
+    /// Indica que la aplicación está cerrándose de forma explícita (menú tray "Salir").
+    /// Lo lee MainWindow.OnClosing para no interceptar el cierre y enviar al tray.
+    /// </summary>
+    public static bool IsExiting { get; private set; }
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -30,16 +36,20 @@ public partial class App : Application
             DisableAvaloniaDataAnnotationValidation();
             _vm = new MainWindowViewModel();
             _mainWindow = new MainWindow { DataContext = _vm };
-            desktop.MainWindow = _mainWindow;
+
+            // La app vive en el tray: gestionamos el ciclo de vida de forma explícita.
+            // NO asignamos desktop.MainWindow para evitar que Avalonia llame a Show()
+            // automáticamente tras OnFrameworkInitializationCompleted.
+            desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+            // Cuando la ventana se cierra de verdad (no solo se oculta al tray), salimos.
+            _mainWindow.Closed += (_, _) => desktop.Shutdown();
 
             SetupTrayIcon(desktop);
 
-            // Honour the "Iniciar minimizado en la bandeja" setting
-            if (_vm.Settings.StartMinimized)
-            {
-                _mainWindow.Show();   // must Show() first so Avalonia initialises the window
-                _mainWindow.Hide();   // then immediately hide to tray
-            }
+            // Mostrar la ventana solo si NO se ha pedido iniciar minimizado.
+            if (!_vm.Settings.StartMinimized)
+                _mainWindow.Show();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -53,7 +63,11 @@ public partial class App : Application
         showItem.Click += (_, _) => ShowMainWindow();
 
         var exitItem = new NativeMenuItem("Salir");
-        exitItem.Click += (_, _) => desktop.Shutdown();
+        exitItem.Click += (_, _) =>
+        {
+            IsExiting = true;   // permite que OnClosing no cancele el cierre
+            desktop.Shutdown();
+        };
 
         menu.Add(showItem);
         menu.Add(new NativeMenuItemSeparator());

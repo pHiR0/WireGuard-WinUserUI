@@ -56,7 +56,8 @@ public partial class MainWindow : Window
 
     protected override void OnClosing(WindowClosingEventArgs e)
     {
-        if (DataContext is MainWindowViewModel vm && vm.Settings.MinimizeToTray)
+        // Si minimizar al tray está activo Y no estamos saliendo explícitamente, ocultar en vez de cerrar.
+        if (DataContext is MainWindowViewModel vm && vm.Settings.MinimizeToTray && !App.IsExiting)
         {
             e.Cancel = true;
             Hide();
