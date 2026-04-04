@@ -8,6 +8,15 @@
     <Configurations>Debug;Release</Configurations>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <OutputPath>bin\$(Configuration)\</OutputPath>
+    <!-- Cultura del instalador: español de España -->
+    <Cultures>es-ES</Cultures>
+    <!--
+      La versión de fecha yyyy.MM.dd.HHmm tiene el componente Major > 255,
+      lo que produce el aviso/error ICE24. Suprimimos ICE24 aquí ya que la
+      versión sigue siendo válida para la comparación de actualizaciones de Windows
+      y se muestra correctamente en el Panel de control.
+    -->
+    <SuppressIces>ICE24</SuppressIces>
   </PropertyGroup>
 
   <!--
@@ -19,7 +28,7 @@
     <ServicePublishDir>$(MSBuildThisFileDirectory)..\artifacts\publish\service\</ServicePublishDir>
     <UIPublishDir>$(MSBuildThisFileDirectory)..\artifacts\publish\ui\</UIPublishDir>
     <!-- Mapear propiedades MSBuild a variables del preprocesador WiX $(var.Xxx) -->
-    <DefineConstants>ServicePublishDir=$(ServicePublishDir);UIPublishDir=$(UIPublishDir)</DefineConstants>
+    <DefineConstants>ServicePublishDir=$(ServicePublishDir);UIPublishDir=$(UIPublishDir);ProductVersion=$(Version)</DefineConstants>
   </PropertyGroup>
 
   <!--

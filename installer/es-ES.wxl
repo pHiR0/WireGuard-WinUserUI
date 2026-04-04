@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  es-ES.wxl — Localización en español (España) para WireGuard Manager
+  Language 3082 = es-ES   Codepage 1252 = Windows Western
+
+  WiX v5 auto-descubre este archivo al construir el proyecto.
+  Las cadenas aquí definidas se mezclan con las traducciones integradas
+  del paquete WixToolset.UI.wixext (que ya incluye UI en español).
+-->
+<WixLocalization xmlns="http://wixtoolset.org/schemas/v4/wxl"
+                 Culture="es-ES"
+                 Language="3082"
+                 Codepage="1252">
+
+  <!-- Archivo RTF de licencia mostrado en el diálogo de aceptación -->
+  <String Id="WixUILicenseRtf" Value="License.rtf" />
+
+</WixLocalization>

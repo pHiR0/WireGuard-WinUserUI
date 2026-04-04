@@ -81,7 +81,7 @@ if (-not $SkipInstaller)
         -p:OutputPath="$InstallerOut\"
     if ($LASTEXITCODE -ne 0) { throw "Error al construir el instalador MSI" }
 
-    $msi = Get-ChildItem $InstallerOut -Filter "*.msi" | Select-Object -First 1
+    $msi = Get-ChildItem $InstallerOut -Filter "*.msi" -Recurse | Select-Object -First 1
     if ($msi)
     {
         Write-Host "  MSI generado: $($msi.FullName)" -ForegroundColor Green

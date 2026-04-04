@@ -15,5 +15,8 @@
       <Directory Id="DIR_StartMenu" Name="WireGuard Manager" />
     </StandardDirectory>
 
+    <!-- Escritorio del usuario actual -->
+    <StandardDirectory Id="DesktopFolder" />
+
   </Fragment>
 </Wix>

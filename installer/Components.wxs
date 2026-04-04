@@ -107,5 +107,36 @@
 
     </ComponentGroup>
 
+
+    <!-- ================================================================
+         Acceso directo en el Escritorio
+         ================================================================ -->
+    <ComponentGroup Id="CG_DesktopShortcut" Directory="DesktopFolder">
+
+      <Component Id="C_DesktopShortcut" Guid="E4F5A6B7-C8D9-0123-EFAB-345678901234">
+        <!--
+          Ancla del componente en HKCU — necesario para accesos directos de usuario
+          en instaladores perMachine (ICE38 / ICE43 / ICE57).
+        -->
+        <RegistryValue
+          Root="HKCU"
+          Key="Software\WireGuard-WinUserUI"
+          Name="DesktopShortcut"
+          Type="integer"
+          Value="1"
+          KeyPath="yes" />
+
+        <!-- Acceso directo en el Escritorio -->
+        <Shortcut
+          Id="SC_Desktop"
+          Directory="DesktopFolder"
+          Name="WireGuard Manager"
+          Target="[INSTALLFOLDER]WireGuard.UI.exe"
+          WorkingDirectory="INSTALLFOLDER"
+          Description="Interfaz de gestión de túneles WireGuard" />
+      </Component>
+
+    </ComponentGroup>
+
   </Fragment>
 </Wix>

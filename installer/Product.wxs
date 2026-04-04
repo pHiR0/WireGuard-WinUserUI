@@ -10,12 +10,18 @@
   <Package
     Name="WireGuard Manager"
     Manufacturer="pHiR0"
-    Version="1.0.0.0"
+    Version="$(var.ProductVersion)"
     UpgradeCode="A1B2C3D4-E5F6-7890-ABCD-EF1234567890"
     Scope="perMachine"
     InstallerVersion="500"
     Compressed="yes"
     Language="3082">
+
+    <!-- Icono visible en Panel de Control > Desinstalar programas -->
+    <Icon Id="AppIcon.ico" SourceFile="..\src\UI\Assets\icon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
+    <!-- Versión completa para el panel 'Soporte técnico' en Desinstalar programas -->
+    <Property Id="ARPCOMMENTS" Value="Versión de compilación: $(var.ProductVersion)" />
 
     <!--
       MajorUpgrade: al instalar una versión más reciente, elimina la anterior automáticamente.
@@ -36,6 +42,7 @@
       <ComponentGroupRef Id="CG_Service" />
       <ComponentGroupRef Id="CG_UI" />
       <ComponentGroupRef Id="CG_Shortcuts" />
+      <ComponentGroupRef Id="CG_DesktopShortcut" />
     </Feature>
 
   </Package>
