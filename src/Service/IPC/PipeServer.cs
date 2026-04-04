@@ -120,44 +120,40 @@ public sealed class PipeServer
     }
 
     /// <summary>
-    /// Identifies the calling user via SID-level impersonation. Returns the SID string
-    /// and the normalised username, or null if the caller could not be identified.
+    /// Identifies the calling user via GetImpersonationUserName + NTAccount→SID translation.
+    /// Returns the SID string and the normalised username, or null if the caller could not
+    /// be identified.
     /// </summary>
     private (string Sid, string Username)? IdentifyCaller(NamedPipeServerStream pipe)
     {
         try
         {
-            // RunAsClient temporarily impersonates the caller so we can inspect their
-            // WindowsIdentity. This gives us SID-level identity — much stronger than
-            // the raw username string returned by GetImpersonationUserName().
-            string? sidValue = null;
-            string? nameValue = null;
-            bool isAuthenticated = false;
-
-            pipe.RunAsClient(() =>
+            // GetImpersonationUserName returns DOMAIN\Username after the first read.
+            var rawName = pipe.GetImpersonationUserName();
+            if (string.IsNullOrEmpty(rawName))
             {
-                using var identity = WindowsIdentity.GetCurrent();
-                sidValue = identity.User?.Value;
-                nameValue = identity.Name;
-                isAuthenticated = identity.IsAuthenticated;
-            });
-
-            if (sidValue is null || nameValue is null || !isAuthenticated)
-            {
-                _logger.LogWarning(
-                    "SECURITY: Connected client could not be identified (SID={Sid}, Authenticated={Auth})",
-                    sidValue ?? "null", isAuthenticated);
+                _logger.LogWarning("SECURITY: GetImpersonationUserName returned empty for connected client");
                 return null;
             }
 
+            // Translate the account name to a SecurityIdentifier (SID) for robust identity.
+            // NTAccount.Translate is in System.Security.Principal.Windows — no extra deps needed.
+            var account = new NTAccount(rawName);
+            var sid = (SecurityIdentifier)account.Translate(typeof(SecurityIdentifier));
+
             // Normalise: strip DOMAIN\ prefix, lowercase
-            var backslash = nameValue.IndexOf('\\');
-            var username = backslash >= 0 ? nameValue[(backslash + 1)..] : nameValue;
-            return (sidValue, username.ToLowerInvariant());
+            var backslash = rawName.IndexOf('\\');
+            var username = backslash >= 0 ? rawName[(backslash + 1)..] : rawName;
+            return (sid.Value, username.ToLowerInvariant());
+        }
+        catch (IdentityNotMappedException ex)
+        {
+            _logger.LogWarning(ex, "SECURITY: Could not resolve SID for connected pipe client");
+            return null;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "SECURITY: Failed to identify connected client via impersonation");
+            _logger.LogWarning(ex, "SECURITY: Failed to identify connected client");
             return null;
         }
     }
