@@ -1,0 +1,32 @@
+name: Mirror → Repo público
+
+# Se dispara cada vez que se hace push a main en el repo privado.
+# Sincroniza main del repo privado con el repo público,
+# excluyendo automáticamente los archivos privados (ya excluidos de main
+# por .gitattributes merge=ours).
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  mirror:
+    name: Sincronizar main con WireGuard-WinUserUI (público)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout completo (con historial)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # necesario para push con historial completo
+
+      - name: Configurar identidad git
+        run: |
+          git config user.name  "mirror-bot"
+          git config user.email "mirror@noreply.github.com"
+
+      - name: Push a repo público
+        run: |
+          git remote add public \
+            https://x-access-token:${{ secrets.PUBLIC_REPO_TOKEN }}@github.com/pHiR0/WireGuard-WinUserUI.git
+          git push public HEAD:main --force
