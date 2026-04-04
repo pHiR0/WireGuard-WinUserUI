@@ -47,11 +47,6 @@ Users can view, connect, disconnect, create, import, edit and delete tunnels **w
     </description>
     <releaseNotes>https://github.com/pHiR0/WireGuard-WinUserUI/releases</releaseNotes>
     <copyright>Copyright (c) 2026 pHiR0</copyright>
-    <!-- WireGuard for Windows es necesario pero no se declara como dependencia
-         obligatoria: la app notifica al usuario si no está instalado. -->
-    <!-- <dependencies>
-      <dependency id="wireguard" />
-    </dependencies> -->
   </metadata>
   <files>
     <file src="tools\**" target="tools" />
