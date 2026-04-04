@@ -18,13 +18,14 @@
   <PropertyGroup>
     <ServicePublishDir>$(MSBuildThisFileDirectory)..\artifacts\publish\service\</ServicePublishDir>
     <UIPublishDir>$(MSBuildThisFileDirectory)..\artifacts\publish\ui\</UIPublishDir>
+    <!-- Mapear propiedades MSBuild a variables del preprocesador WiX $(var.Xxx) -->
+    <DefineConstants>ServicePublishDir=$(ServicePublishDir);UIPublishDir=$(UIPublishDir)</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="Product.wxs" />
-    <Compile Include="Directories.wxs" />
-    <Compile Include="Components.wxs" />
-  </ItemGroup>
+  <!--
+    WiX v5 SDK auto-discovers *.wxs files in the project directory.
+    No need for explicit <Compile Include="..."/> items.
+  -->
 
   <!--
     Extensiones WiX utilizadas:

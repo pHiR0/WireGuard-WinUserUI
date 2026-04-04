@@ -49,7 +49,7 @@
         -->
         <ServiceControl
           Id="SC_WireGuardService"
-          ServiceName="WireGuard-WinUserUI"
+          Name="WireGuard-WinUserUI"
           Start="install"
           Stop="both"
           Remove="uninstall"
@@ -81,11 +81,11 @@
 
       <Component Id="C_StartMenuShortcut" Guid="D3E4F5A6-B7C8-9012-DEFA-234567890123">
         <!--
-          Ancla del componente en el registro para que Windows Installer
-          gestione correctamente la instalación/desinstalación por usuario/máquina.
+          Ancla del componente en HKCU para que Windows Installer
+          gestione correctamente la instalación/desinstalación del acceso directo.
         -->
         <RegistryValue
-          Root="HKLM"
+          Root="HKCU"
           Key="Software\WireGuard-WinUserUI"
           Name="StartMenuShortcut"
           Type="integer"
