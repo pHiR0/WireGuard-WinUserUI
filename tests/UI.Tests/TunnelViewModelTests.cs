@@ -6,12 +6,12 @@ namespace WireGuard.UI.Tests;
 public class TunnelViewModelTests
 {
     [Theory]
-    [InlineData(TunnelStatus.Running, "Connected")]
-    [InlineData(TunnelStatus.Stopped, "Disconnected")]
-    [InlineData(TunnelStatus.StartPending, "Connecting...")]
-    [InlineData(TunnelStatus.StopPending, "Disconnecting...")]
+    [InlineData(TunnelStatus.Running, "Conectado")]
+    [InlineData(TunnelStatus.Stopped, "Desconectado")]
+    [InlineData(TunnelStatus.StartPending, "Conectando...")]
+    [InlineData(TunnelStatus.StopPending, "Desconectando...")]
     [InlineData(TunnelStatus.Error, "Error")]
-    [InlineData(TunnelStatus.Unknown, "Unknown")]
+    [InlineData(TunnelStatus.Unknown, "Desconocido")]
     public void StatusText_ReturnsExpectedValue(TunnelStatus status, string expected)
     {
         var vm = new TunnelViewModel { Status = status };

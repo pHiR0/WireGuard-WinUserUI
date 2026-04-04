@@ -424,4 +424,82 @@ public class RequestHandlerTests
         Assert.False(response.Success);
         Assert.Equal("Access denied", response.Error);
     }
+
+    // --- Phase 4: SetTunnelAutoStart ---
+
+    [Fact]
+    public async Task SetTunnelAutoStart_AsAdvancedOperator_ReturnsSuccess()
+    {
+        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(UserRole.AdvancedOperator);
+        _tunnelManagerMock.Setup(x => x.SetTunnelAutoStartAsync("tunnel1", true, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var request = new IpcRequest
+        {
+            Command = IpcCommand.SetTunnelAutoStart,
+            TunnelName = "tunnel1",
+            AutoStart = true,
+            RequestId = "r15",
+        };
+        var response = await _handler.HandleAsync(request, "advop", CancellationToken.None);
+
+        Assert.True(response.Success);
+        _tunnelManagerMock.Verify(x => x.SetTunnelAutoStartAsync("tunnel1", true, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SetTunnelAutoStart_AsOperator_Denied()
+    {
+        _roleStoreMock.Setup(x => x.GetRoleAsync("operator", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(UserRole.Operator);
+
+        var request = new IpcRequest
+        {
+            Command = IpcCommand.SetTunnelAutoStart,
+            TunnelName = "tunnel1",
+            AutoStart = true,
+            RequestId = "r16",
+        };
+        var response = await _handler.HandleAsync(request, "operator", CancellationToken.None);
+
+        Assert.False(response.Success);
+        Assert.Equal("Access denied", response.Error);
+    }
+
+    [Fact]
+    public async Task SetTunnelAutoStart_MissingAutoStart_ReturnsFail()
+    {
+        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(UserRole.AdvancedOperator);
+
+        var request = new IpcRequest
+        {
+            Command = IpcCommand.SetTunnelAutoStart,
+            TunnelName = "tunnel1",
+            RequestId = "r17",
+        };
+        var response = await _handler.HandleAsync(request, "advop", CancellationToken.None);
+
+        Assert.False(response.Success);
+        Assert.Contains("AutoStart is required", response.Error);
+    }
+
+    [Fact]
+    public async Task SetTunnelAutoStart_MissingTunnelName_ReturnsFail()
+    {
+        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(UserRole.AdvancedOperator);
+
+        var request = new IpcRequest
+        {
+            Command = IpcCommand.SetTunnelAutoStart,
+            AutoStart = true,
+            RequestId = "r18",
+        };
+        var response = await _handler.HandleAsync(request, "advop", CancellationToken.None);
+
+        Assert.False(response.Success);
+        Assert.Contains("TunnelName is required", response.Error);
+    }
 }

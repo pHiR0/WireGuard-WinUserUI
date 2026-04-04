@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
@@ -18,6 +19,12 @@ public sealed class PipeServer
     // pipe first to intercept connections intended for our privileged service.
     private const int FirstPipeInstanceFlag = 0x00080000;
     private bool _isFirstInstance = true;
+
+    // --- Rate limiting ---
+    // Max concurrent connections per user SID. Prevents a single user from
+    // exhausting server capacity (pipe-based denial-of-service).
+    private const int MaxConnectionsPerUser = 4;
+    private readonly ConcurrentDictionary<string, int> _activeConnectionsBySid = new();
 
     public PipeServer(RequestHandler requestHandler, ILogger logger)
     {
@@ -65,6 +72,14 @@ public sealed class PipeServer
     {
         var pipeSecurity = new PipeSecurity();
 
+        // DENY network access explicitly — defence-in-depth against remote pipe connections.
+        // Named pipes are local-only by default, but an explicit deny makes the intent clear
+        // and guards against any future configuration drift.
+        pipeSecurity.AddAccessRule(new PipeAccessRule(
+            new SecurityIdentifier(WellKnownSidType.NetworkSid, null),
+            PipeAccessRights.FullControl,
+            AccessControlType.Deny));
+
         // Allow SYSTEM full control (when running as a Windows Service)
         pipeSecurity.AddAccessRule(new PipeAccessRule(
             new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null),
@@ -78,7 +93,6 @@ public sealed class PipeServer
             AccessControlType.Allow));
 
         // Allow authenticated local users to read/write (so non-admin UI users can connect)
-        // Note: Named Pipes are local-only by default; no explicit network deny needed.
         pipeSecurity.AddAccessRule(new PipeAccessRule(
             new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null),
             PipeAccessRights.ReadWrite,
@@ -105,33 +119,108 @@ public sealed class PipeServer
             pipeSecurity);
     }
 
+    /// <summary>
+    /// Identifies the calling user via SID-level impersonation. Returns the SID string
+    /// and the normalised username, or null if the caller could not be identified.
+    /// </summary>
+    private (string Sid, string Username)? IdentifyCaller(NamedPipeServerStream pipe)
+    {
+        try
+        {
+            // RunAsClient temporarily impersonates the caller so we can inspect their
+            // WindowsIdentity. This gives us SID-level identity — much stronger than
+            // the raw username string returned by GetImpersonationUserName().
+            string? sidValue = null;
+            string? nameValue = null;
+            bool isAuthenticated = false;
+
+            pipe.RunAsClient(() =>
+            {
+                using var identity = WindowsIdentity.GetCurrent();
+                sidValue = identity.User?.Value;
+                nameValue = identity.Name;
+                isAuthenticated = identity.IsAuthenticated;
+            });
+
+            if (sidValue is null || nameValue is null || !isAuthenticated)
+            {
+                _logger.LogWarning(
+                    "SECURITY: Connected client could not be identified (SID={Sid}, Authenticated={Auth})",
+                    sidValue ?? "null", isAuthenticated);
+                return null;
+            }
+
+            // Normalise: strip DOMAIN\ prefix, lowercase
+            var backslash = nameValue.IndexOf('\\');
+            var username = backslash >= 0 ? nameValue[(backslash + 1)..] : nameValue;
+            return (sidValue, username.ToLowerInvariant());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "SECURITY: Failed to identify connected client via impersonation");
+            return null;
+        }
+    }
+
     private async Task HandleClientAsync(NamedPipeServerStream pipe, CancellationToken ct)
     {
         string? callingUser = null;
+        string? callingSid = null;
         try
         {
-            while (pipe.IsConnected && !ct.IsCancellationRequested)
+            // Read the first message — Windows needs at least one read before
+            // GetImpersonationUserName / RunAsClient work reliably.
+            var firstData = await PipeMessageIO.ReadMessageAsync(pipe, ct);
+            if (firstData is null) return; // client disconnected immediately
+
+            // --- SID-level caller identification ---
+            var callerInfo = IdentifyCaller(pipe);
+            if (callerInfo is null)
             {
-                var data = await PipeMessageIO.ReadMessageAsync(pipe, ct);
-                if (data is null) break; // client disconnected
-
-                // Windows requires at least one read before GetImpersonationUserName works.
-                // Identify the user on the first message, then reuse for subsequent ones.
-                callingUser ??= GetCallingUser(pipe);
-                _logger.LogDebug("Request from '{User}'", callingUser);
-
-                var request = IpcRequest.Deserialize(data);
-                if (request is null)
-                {
-                    _logger.LogWarning("Received invalid request from '{User}'", callingUser);
-                    var errorResp = IpcResponse.Fail("Invalid request format");
-                    await PipeMessageIO.WriteMessageAsync(pipe, errorResp.Serialize(), ct);
-                    continue;
-                }
-
-                var response = await _requestHandler.HandleAsync(request, callingUser, ct);
-                await PipeMessageIO.WriteMessageAsync(pipe, response.Serialize(), ct);
+                _logger.LogWarning("SECURITY: Rejecting unidentified pipe client");
+                var deny = IpcResponse.Fail("Caller identity could not be verified");
+                await PipeMessageIO.WriteMessageAsync(pipe, deny.Serialize(), ct);
+                return;
             }
+
+            callingSid = callerInfo.Value.Sid;
+            callingUser = callerInfo.Value.Username;
+
+            // --- Per-user connection rate limiting ---
+            var currentCount = _activeConnectionsBySid.AddOrUpdate(callingSid, 1, (_, c) => c + 1);
+            if (currentCount > MaxConnectionsPerUser)
+            {
+                _activeConnectionsBySid.AddOrUpdate(callingSid, 0, (_, c) => Math.Max(0, c - 1));
+                _logger.LogWarning(
+                    "SECURITY: Rate limit exceeded for user '{User}' (SID {Sid}): {Count} active connections",
+                    callingUser, callingSid, currentCount);
+                var deny = IpcResponse.Fail("Too many concurrent connections");
+                await PipeMessageIO.WriteMessageAsync(pipe, deny.Serialize(), ct);
+                return;
+            }
+
+            _logger.LogInformation("Pipe client connected: '{User}' (SID {Sid})", callingUser, callingSid);
+
+            try
+            {
+                // Process the first message we already read
+                await ProcessMessageAsync(pipe, firstData, callingUser, ct);
+
+                // Process subsequent messages
+                while (pipe.IsConnected && !ct.IsCancellationRequested)
+                {
+                    var data = await PipeMessageIO.ReadMessageAsync(pipe, ct);
+                    if (data is null) break;
+
+                    await ProcessMessageAsync(pipe, data, callingUser, ct);
+                }
+            }
+            finally
+            {
+                _activeConnectionsBySid.AddOrUpdate(callingSid, 0, (_, c) => Math.Max(0, c - 1));
+            }
+
+            _logger.LogInformation("Pipe client disconnected: '{User}' (SID {Sid})", callingUser, callingSid);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -139,7 +228,8 @@ public sealed class PipeServer
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error handling pipe client from '{User}'", callingUser ?? "unknown");
+            _logger.LogError(ex, "Error handling pipe client from '{User}' (SID {Sid})",
+                callingUser ?? "unknown", callingSid ?? "unknown");
         }
         finally
         {
@@ -147,14 +237,21 @@ public sealed class PipeServer
         }
     }
 
-    private static string GetCallingUser(NamedPipeServerStream pipe)
+    private async Task ProcessMessageAsync(
+        NamedPipeServerStream pipe, byte[] data, string callingUser, CancellationToken ct)
     {
-        // GetImpersonationUserName returns DOMAIN\Username
-        var rawName = pipe.GetImpersonationUserName();
+        _logger.LogDebug("Request from '{User}'", callingUser);
 
-        // Strip domain prefix if present, normalize to lowercase
-        var backslash = rawName.IndexOf('\\');
-        var username = backslash >= 0 ? rawName[(backslash + 1)..] : rawName;
-        return username.ToLowerInvariant();
+        var request = IpcRequest.Deserialize(data);
+        if (request is null)
+        {
+            _logger.LogWarning("Received invalid request from '{User}'", callingUser);
+            var errorResp = IpcResponse.Fail("Invalid request format");
+            await PipeMessageIO.WriteMessageAsync(pipe, errorResp.Serialize(), ct);
+            return;
+        }
+
+        var response = await _requestHandler.HandleAsync(request, callingUser, ct);
+        await PipeMessageIO.WriteMessageAsync(pipe, response.Serialize(), ct);
     }
 }

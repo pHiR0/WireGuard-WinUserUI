@@ -41,6 +41,10 @@ public class AuthorizationServiceTests
     // Phase 2 — Audit
     [InlineData(UserRole.AdvancedOperator, IpcCommand.GetAuditLog, false)]
     [InlineData(UserRole.Admin, IpcCommand.GetAuditLog, true)]
+    // Phase 2 — Auto-start
+    [InlineData(UserRole.Operator, IpcCommand.SetTunnelAutoStart, false)]
+    [InlineData(UserRole.AdvancedOperator, IpcCommand.SetTunnelAutoStart, true)]
+    [InlineData(UserRole.Admin, IpcCommand.SetTunnelAutoStart, true)]
     public void IsAuthorized_ReturnsExpectedResult(UserRole role, IpcCommand command, bool expected)
     {
         var result = _authService.IsAuthorized(role, command);
