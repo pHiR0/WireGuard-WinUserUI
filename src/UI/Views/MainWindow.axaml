@@ -216,7 +216,7 @@
                                         <!-- Detalles del túnel (visibles cuando está conectado y hay datos) -->
                                         <Border Margin="20,6,0,0"
                                                 IsVisible="{Binding HasDetails}">
-                                            <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                                            <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
                                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="IP del túnel:"
                                                            FontSize="11" Foreground="#94A3B8"
                                                            IsVisible="{Binding TunnelAddress, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
@@ -244,6 +244,13 @@
                                                 <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding TransferText}"
                                                            FontSize="11"
                                                            IsVisible="{Binding TransferText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Conectado:"
+                                                           FontSize="11" Foreground="#94A3B8"
+                                                           IsVisible="{Binding ConnectionTimeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding ConnectionTimeText}"
+                                                           FontSize="11"
+                                                           IsVisible="{Binding ConnectionTimeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
                                             </Grid>
                                         </Border>
 

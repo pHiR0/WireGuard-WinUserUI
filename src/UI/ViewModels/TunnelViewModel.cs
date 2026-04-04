@@ -39,6 +39,20 @@ public partial class TunnelViewModel : ViewModelBase
     [ObservableProperty]
     private bool _autoStart;
 
+    private DateTimeOffset? _connectedSince;
+
+    public string? ConnectionTimeText
+    {
+        get
+        {
+            if (_connectedSince is null || Status != TunnelStatus.Running) return null;
+            var elapsed = DateTimeOffset.UtcNow - _connectedSince.Value;
+            if (elapsed.TotalHours >= 1)
+                return $"{(int)elapsed.TotalHours:D2}h {elapsed.Minutes:D2}m {elapsed.Seconds:D2}s";
+            return $"{elapsed.Minutes:D2}m {elapsed.Seconds:D2}s";
+        }
+    }
+
     public bool CanStart => Status is TunnelStatus.Stopped or TunnelStatus.Error or TunnelStatus.Unknown;
     public bool CanStop => Status is TunnelStatus.Running;
     public bool IsPending => Status is TunnelStatus.StartPending or TunnelStatus.StopPending;
@@ -95,12 +109,18 @@ public partial class TunnelViewModel : ViewModelBase
 
     partial void OnStatusChanged(TunnelStatus value)
     {
+        if (value == TunnelStatus.Running && _connectedSince is null)
+            _connectedSince = DateTimeOffset.UtcNow;
+        else if (value != TunnelStatus.Running)
+            _connectedSince = null;
+
         OnPropertyChanged(nameof(CanStart));
         OnPropertyChanged(nameof(CanStop));
         OnPropertyChanged(nameof(IsPending));
         OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(StatusColor));
         OnPropertyChanged(nameof(CardBackground));
+        OnPropertyChanged(nameof(ConnectionTimeText));
     }
 
     partial void OnRxBytesChanged(long value) => OnPropertyChanged(nameof(TransferText));
@@ -116,6 +136,8 @@ public partial class TunnelViewModel : ViewModelBase
         RxBytes = info.RxBytes;
         TxBytes = info.TxBytes;
         AutoStart = info.AutoStart;
+        // Refresh computed connection time on every update
+        OnPropertyChanged(nameof(ConnectionTimeText));
     }
 }
 
