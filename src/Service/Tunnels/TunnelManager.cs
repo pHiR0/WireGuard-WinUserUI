@@ -163,21 +163,9 @@ public sealed partial class TunnelManager : ITunnelManager
         await RunWireGuardAsync($"/installtunnelservice \"{confPath}\"", ct);
         _logger.LogInformation("Tunnel '{Name}' installed and registered", name);
 
-        // By default, the service starts immediately after install and is set to Automatic.
-        // Stop it immediately (user must start it manually) and set startup type to Manual.
-        try
-        {
-            var serviceName = TunnelServicePrefix + name;
-            using var svc = new ServiceController(serviceName);
-            svc.Refresh();
-            if (svc.Status == ServiceControllerStatus.Running)
-            {
-                svc.Stop();
-                svc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(15));
-            }
-        }
-        catch (Exception ex) { _logger.LogWarning(ex, "Could not stop tunnel '{Name}' after install", name); }
-
+        // wireguard.exe /installtunnelservice starts the service immediately and sets it to Automatic.
+        // Stop it so the user controls when to connect, and set startup type to Manual.
+        await EnsureTunnelStoppedAsync(name, ct);
         await SetServiceStartTypeAsync(TunnelServicePrefix + name, autoStart: false, ct);
     }
 
@@ -220,8 +208,11 @@ public sealed partial class TunnelManager : ITunnelManager
         SecureConfFile(confPath);
         await RunWireGuardAsync($"/installtunnelservice \"{confPath}\"", ct);
 
-        // Restore the startup type the service had before the edit (re-install defaults to Auto)
-        // If it was a fresh install, use Manual (same as new import)
+        // /installtunnelservice always starts the service; stop it if it wasn't running before the edit.
+        if (!wasRunning)
+            await EnsureTunnelStoppedAsync(name, ct);
+
+        // Restore the startup type the service had before the edit (re-install always sets Automatic)
         await SetServiceStartTypeAsync(TunnelServicePrefix + name, wasAutoStart, ct);
 
         if (wasRunning)
@@ -268,6 +259,37 @@ public sealed partial class TunnelManager : ITunnelManager
         }
 
         return await File.ReadAllTextAsync(confPath, ct);
+    }
+
+    /// <summary>
+    /// Waits for a freshly-installed tunnel service to finish starting (StartPending→Running),
+    /// then stops it. Used after /installtunnelservice to ensure the tunnel is not left connected.
+    /// </summary>
+    private async Task EnsureTunnelStoppedAsync(string tunnelName, CancellationToken ct)
+    {
+        var serviceName = TunnelServicePrefix + tunnelName;
+        try
+        {
+            using var svc = new ServiceController(serviceName);
+            svc.Refresh();
+
+            // Wait for StartPending to resolve before we can send Stop
+            if (svc.Status == ServiceControllerStatus.StartPending)
+                await Task.Run(() => svc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10)), ct);
+
+            svc.Refresh();
+            if (svc.Status == ServiceControllerStatus.Running
+             || svc.Status == ServiceControllerStatus.StartPending)
+            {
+                svc.Stop();
+                await Task.Run(() => svc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(20)), ct);
+                _logger.LogInformation("Stopped auto-started tunnel '{Name}' after install/edit", tunnelName);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not stop tunnel '{Name}' after install/edit", tunnelName);
+        }
     }
 
     // --- helpers ---
