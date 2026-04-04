@@ -354,7 +354,8 @@ public partial class MainWindowViewModel : ViewModelBase
         IsRefreshingPublicIp = true;
         try
         {
-            var ip = await _publicIpService.GetPublicIpAsync(force);
+            var orderedIds = Settings.GetOrderedEnabledProviderIds();
+            var ip = await _publicIpService.GetPublicIpAsync(force, orderedIds);
             if (ip is not null)
                 PublicIp = ip;
         }

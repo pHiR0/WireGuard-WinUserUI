@@ -410,6 +410,61 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Resolución de IP pública -->
+                        <Border Background="#252B3A" CornerRadius="8" Padding="16">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Resolución de IP pública" FontWeight="SemiBold" FontSize="14"/>
+
+                                <!-- Servicio principal -->
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="Servicio principal:" Foreground="#94A3B8"
+                                               VerticalAlignment="Center" Width="130"/>
+                                    <ComboBox ItemsSource="{Binding PublicIpProviders}"
+                                              SelectedItem="{Binding SelectedPrimaryProvider}"
+                                              MinWidth="200">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:PublicIpProviderViewModel">
+                                                <TextBlock Text="{Binding DisplayName}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <Button Command="{Binding SelectedPrimaryProvider.TestCommand}"
+                                            IsEnabled="{Binding SelectedPrimaryProvider.IsTesting, Converter={x:Static BoolConverters.Not}}"
+                                            Padding="8,4" Content="Probar"
+                                            ToolTip.Tip="Probar el servicio principal ahora"/>
+                                    <TextBlock Text="{Binding SelectedPrimaryProvider.TestResult}"
+                                               VerticalAlignment="Center"
+                                               Foreground="#94A3B8" FontSize="11"/>
+                                </StackPanel>
+
+                                <TextBlock Text="Fallbacks (en orden):" Foreground="#94A3B8"
+                                           FontSize="12" Margin="0,6,0,0"/>
+
+                                <!-- Lista de fallbacks -->
+                                <ItemsControl ItemsSource="{Binding PublicIpProviders}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:PublicIpProviderViewModel">
+                                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,3,0,0"
+                                                        IsVisible="{Binding !IsPrimary}">
+                                                <ToggleSwitch IsChecked="{Binding IsEnabled}"
+                                                              OnContent="" OffContent=""
+                                                              Padding="0" Margin="0,-6,0,-6"/>
+                                                <TextBlock Text="{Binding DisplayName}"
+                                                           VerticalAlignment="Center" MinWidth="160"
+                                                           FontSize="12"/>
+                                                <Button Command="{Binding TestCommand}"
+                                                        IsEnabled="{Binding !IsTesting}"
+                                                        Padding="6,3" Content="Probar" FontSize="11"/>
+                                                <TextBlock Text="{Binding TestResult}"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="#94A3B8" FontSize="11"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

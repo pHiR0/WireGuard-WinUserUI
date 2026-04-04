@@ -21,16 +21,29 @@ public sealed class PublicIpService : IDisposable
         Timeout = TimeSpan.FromSeconds(5)
     };
 
-    // Ordered fallback list of HTTP-based IP detection services
-    private static readonly IReadOnlyList<Func<CancellationToken, Task<string?>>> _httpProviders =
+    /// <summary>All available IP-resolution providers in default display order.</summary>
+    public static readonly IReadOnlyList<(string Id, string DisplayName)> AllProviders =
     [
-        ct => FetchFromJsonAsync("https://api.ipify.org?format=json", "ip", ct),
-        ct => FetchFromJsonAsync("https://ipinfo.io/json", "ip", ct),
-        ct => FetchFromJsonAsync("https://api.my-ip.io/v1/ip.json", "ip", ct),
-        ct => FetchFromPlainTextAsync("https://ifconfig.me/ip", ct),
-        ct => FetchFromPlainTextAsync("https://api4.my-ip.io/v1/ip", ct),
-        ct => FetchFromPlainTextAsync("https://checkip.amazonaws.com", ct),
+        ("ipify",      "api.ipify.org"),
+        ("ipinfo",     "ipinfo.io"),
+        ("myipio",     "api.my-ip.io"),
+        ("ifconfigme", "ifconfig.me"),
+        ("myipio4",    "api4.my-ip.io"),
+        ("amazonaws",  "checkip.amazonaws.com"),
+        ("dns",        "DNS (OpenDNS)"),
     ];
+
+    private static readonly IReadOnlyDictionary<string, Func<CancellationToken, Task<string?>>> _fetchByProvider =
+        new Dictionary<string, Func<CancellationToken, Task<string?>>>
+        {
+            ["ipify"]      = ct => FetchFromJsonAsync("https://api.ipify.org?format=json", "ip", ct),
+            ["ipinfo"]     = ct => FetchFromJsonAsync("https://ipinfo.io/json", "ip", ct),
+            ["myipio"]     = ct => FetchFromJsonAsync("https://api.my-ip.io/v1/ip.json", "ip", ct),
+            ["ifconfigme"] = ct => FetchFromPlainTextAsync("https://ifconfig.me/ip", ct),
+            ["myipio4"]    = ct => FetchFromPlainTextAsync("https://api4.my-ip.io/v1/ip", ct),
+            ["amazonaws"]  = ct => FetchFromPlainTextAsync("https://checkip.amazonaws.com", ct),
+            ["dns"]        = ct => ResolveViaDnsAsync(ct),
+        };
 
     private DateTimeOffset _lastFetch = DateTimeOffset.MinValue;
     private const int MinFetchIntervalSeconds = 30;
@@ -38,41 +51,50 @@ public sealed class PublicIpService : IDisposable
     /// <summary>
     /// Gets the current public IP. Uses cached value if within the rate-limit window,
     /// unless <paramref name="force"/> is true (e.g. after tunnel connect/disconnect).
+    /// <paramref name="orderedProviderIds"/> optionally overrides the provider order/selection.
     /// </summary>
-    public async Task<string?> GetPublicIpAsync(bool force = false, CancellationToken ct = default)
+    public async Task<string?> GetPublicIpAsync(bool force = false,
+        IReadOnlyList<string>? orderedProviderIds = null,
+        CancellationToken ct = default)
     {
         if (!force && (DateTimeOffset.UtcNow - _lastFetch).TotalSeconds < MinFetchIntervalSeconds)
             return null; // Caller should keep the previous value
 
-        var ip = await ResolveAsync(ct);
+        var ip = await ResolveAsync(orderedProviderIds, ct);
         if (ip is not null)
             _lastFetch = DateTimeOffset.UtcNow;
         return ip;
     }
 
-    private static async Task<string?> ResolveAsync(CancellationToken ct)
+    /// <summary>Tests a single provider and returns the IP it resolves, or null on failure.</summary>
+    public static async Task<string?> TestProviderAsync(string id, CancellationToken ct = default)
     {
-        // Try each HTTP provider in order, stop at first success
-        foreach (var provider in _httpProviders)
+        if (!_fetchByProvider.TryGetValue(id, out var fetch)) return null;
+        try
         {
+            var ip = await fetch(ct);
+            return !string.IsNullOrWhiteSpace(ip) && IsValidIp(ip) ? ip.Trim() : null;
+        }
+        catch { return null; }
+    }
+
+    private static async Task<string?> ResolveAsync(IReadOnlyList<string>? orderedIds, CancellationToken ct)
+    {
+        var ids = orderedIds is { Count: > 0 }
+            ? orderedIds
+            : (IEnumerable<string>)AllProviders.Select(p => p.Id);
+
+        foreach (var id in ids)
+        {
+            if (!_fetchByProvider.TryGetValue(id, out var fetch)) continue;
             try
             {
-                var ip = await provider(ct);
+                var ip = await fetch(ct);
                 if (!string.IsNullOrWhiteSpace(ip) && IsValidIp(ip))
                     return ip.Trim();
             }
             catch { /* try next */ }
         }
-
-        // Last resort: DNS method via myip.opendns.com @ resolver1.opendns.com
-        try
-        {
-            var ip = await ResolveViaDnsAsync(ct);
-            if (!string.IsNullOrWhiteSpace(ip) && IsValidIp(ip))
-                return ip;
-        }
-        catch { /* all methods failed */ }
-
         return null;
     }
 

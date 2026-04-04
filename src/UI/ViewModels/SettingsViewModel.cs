@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Win32;
+using WireGuard.UI.Services;
 
 namespace WireGuard.UI.ViewModels;
 
@@ -40,6 +44,11 @@ public partial class SettingsViewModel : ViewModelBase
     private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private const string RunValueName = "WireGuard-WinUserUI";
 
+    public ObservableCollection<PublicIpProviderViewModel> PublicIpProviders { get; } = [];
+
+    [ObservableProperty]
+    private PublicIpProviderViewModel? _selectedPrimaryProvider;
+
     public SettingsViewModel()
     {
         Load();
@@ -54,8 +63,26 @@ public partial class SettingsViewModel : ViewModelBase
 
         if (e.PropertyName == nameof(StartWithWindows))
             ApplyStartWithWindows(StartWithWindows);
+        else if (e.PropertyName == nameof(SelectedPrimaryProvider))
+        {
+            foreach (var p in PublicIpProviders)
+                p.IsPrimary = p == SelectedPrimaryProvider;
+            Save();
+        }
         else
             Save();
+    }
+
+    /// <summary>Returns the ordered list of enabled provider IDs: primary first, then enabled fallbacks.</summary>
+    public IReadOnlyList<string> GetOrderedEnabledProviderIds()
+    {
+        var result = new List<string>();
+        if (SelectedPrimaryProvider is not null)
+            result.Add(SelectedPrimaryProvider.Id);
+        result.AddRange(PublicIpProviders
+            .Where(p => p != SelectedPrimaryProvider && p.IsEnabled)
+            .Select(p => p.Id));
+        return result;
     }
 
     private void Save()
@@ -69,6 +96,11 @@ public partial class SettingsViewModel : ViewModelBase
                 EnableNotifications = EnableNotifications,
                 MinimizeToTray = MinimizeToTray,
                 StartMinimized = StartMinimized,
+                PrimaryProviderId = SelectedPrimaryProvider?.Id ?? "ipify",
+                EnabledFallbackIds = PublicIpProviders
+                    .Where(p => p != SelectedPrimaryProvider && p.IsEnabled)
+                    .Select(p => p.Id)
+                    .ToList(),
             };
             File.WriteAllText(SettingsPath, JsonSerializer.Serialize(data, JsonOpts));
         }
@@ -77,19 +109,45 @@ public partial class SettingsViewModel : ViewModelBase
 
     private void Load()
     {
+        SettingsData? data = null;
         try
         {
-            if (!File.Exists(SettingsPath)) return;
-            var json = File.ReadAllText(SettingsPath);
-            var data = JsonSerializer.Deserialize<SettingsData>(json, JsonOpts);
-            if (data is null) return;
+            if (File.Exists(SettingsPath))
+            {
+                var json = File.ReadAllText(SettingsPath);
+                data = JsonSerializer.Deserialize<SettingsData>(json, JsonOpts);
+            }
+        }
+        catch { /* use defaults */ }
 
+        if (data is not null)
+        {
             RefreshIntervalSeconds = Math.Clamp(data.RefreshIntervalSeconds, 1, 300);
             EnableNotifications = data.EnableNotifications;
             MinimizeToTray = data.MinimizeToTray;
             StartMinimized = data.StartMinimized;
         }
-        catch { /* use defaults */ }
+
+        // Build provider VMs from the static provider list
+        var primaryId = data?.PrimaryProviderId ?? "ipify";
+        var enabledFallbacks = data?.EnabledFallbackIds?.ToHashSet()
+            ?? PublicIpService.AllProviders.Select(p => p.Id).ToHashSet();
+
+        PublicIpProviders.Clear();
+        foreach (var (id, name) in PublicIpService.AllProviders)
+        {
+            var vm = new PublicIpProviderViewModel
+            {
+                Id = id,
+                DisplayName = name,
+                IsEnabled = id == primaryId || enabledFallbacks.Contains(id),
+                IsPrimary = id == primaryId,
+            };
+            vm.PropertyChanged += (_, _) => { if (_isLoaded) Save(); };
+            PublicIpProviders.Add(vm);
+        }
+        SelectedPrimaryProvider = PublicIpProviders.FirstOrDefault(p => p.IsPrimary)
+            ?? PublicIpProviders.FirstOrDefault();
 
         // StartWithWindows is read from the registry (authoritative source)
         try
@@ -126,6 +184,8 @@ public partial class SettingsViewModel : ViewModelBase
         public bool EnableNotifications { get; set; } = true;
         public bool MinimizeToTray { get; set; } = true;
         public bool StartMinimized { get; set; }
+        public string PrimaryProviderId { get; set; } = "ipify";
+        public List<string> EnabledFallbackIds { get; set; } = [];
     }
 }
 
