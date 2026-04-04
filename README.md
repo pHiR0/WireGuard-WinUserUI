@@ -11,7 +11,7 @@
 
 ## ¿Qué problema resuelve?
 
-WireGuard para Windows tiene una limitación importante: **su interfaz oficial solo puede ser utilizada por usuarios con privilegios de administrador**. Esto la hace inviable en entornos corporativos donde los usuarios no tienen derechos de admin pero necesitan conectarse a túneles VPN gestionados por el departamento de IT.
+WireGuard para Windows tiene una limitación importante: **su interfaz oficial solo puede ser utilizada por usuarios con privilegios de administrador**. Esto la hace inviable en entornos donde los usuarios no tienen derechos de admin pero necesitan conectarse a túneles VPN de Wireguard.
 
 **WireGuard Manager** soluciona este problema mediante una arquitectura de dos capas:
 
