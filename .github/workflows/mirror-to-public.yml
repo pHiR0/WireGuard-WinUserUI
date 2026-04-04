@@ -18,12 +18,8 @@ jobs:
       - name: Checkout completo (con historial)
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # necesario para push con historial completo
-
-      - name: Configurar identidad git
-        run: |
-          git config user.name  "mirror-bot"
-          git config user.email "mirror@noreply.github.com"
+          fetch-depth: 0            # necesario para push con historial completo
+          persist-credentials: false  # no persistir GITHUB_TOKEN para que no anule el PAT
 
       - name: Push a repo público
         env:
