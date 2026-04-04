@@ -26,7 +26,8 @@ jobs:
           git config user.email "mirror@noreply.github.com"
 
       - name: Push a repo público
+        env:
+          TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         run: |
-          git remote add public \
-            https://x-access-token:${{ secrets.PUBLIC_REPO_TOKEN }}@github.com/pHiR0/WireGuard-WinUserUI.git
+          git remote add public https://pHiR0:${TOKEN}@github.com/pHiR0/WireGuard-WinUserUI.git
           git push public HEAD:main --force
