@@ -21,6 +21,13 @@ jobs:
           fetch-depth: 0            # necesario para push con historial completo
           persist-credentials: false  # no persistir GITHUB_TOKEN para que no anule el PAT
 
+      - name: Eliminar carpeta privada .dev/ (si existe)
+        run: |
+          if [ -d ".dev" ]; then
+            git rm -rf .dev/
+            git commit -m "chore: strip .dev/ for public mirror" --author="mirror-bot <mirror@noreply.github.com>"
+          fi
+
       - name: Push a repo público
         env:
           TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}

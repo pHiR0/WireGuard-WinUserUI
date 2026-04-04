@@ -1,4 +1,3 @@
-# Archivos privados — nunca se fusionan desde dev → main
-# "merge=ours" hace que en un merge, main siempre gane (= ignorar el archivo entrante)
-docs/ToDo.md            merge=ours
-docs/ChuletasPrompts.md merge=ours
+# Carpeta privada de desarrollo — nunca se fusiona desde dev → main
+# "merge=ours" hace que en un merge, main siempre gane (= ignorar cambios entrantes)
+.dev/** merge=ours
