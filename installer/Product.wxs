@@ -31,10 +31,13 @@
     <!-- Interfaz de instalador mínima con solo la pantalla de licencia + progreso -->
     <ui:WixUI Id="WixUI_Minimal" />
 
-    <!-- Condición: requiere Windows 10 1809 (build 17763) o superior -->
+    <!-- Condición: requiere Windows 10 o superior (64 bits).
+         VersionNT = major*100+minor: Windows 10/11 = 1000, Win8.1 = 603.
+         El OSS Build number no está disponible como propiedad MSI estándar;
+         el target net8.0-windows10.0.17763.0 ya garantiza el build mínimo en runtime. -->
     <Launch
-      Condition="VersionNT64 >= 1763"
-      Message="WireGuard Manager requiere Windows 10 versión 1809 (build 17763) o superior." />
+      Condition="VersionNT64 >= 1000"
+      Message="WireGuard Manager requiere Windows 10 o superior (64 bits)." />
 
     <!-- Referencias a los grupos de componentes definidos en Components.wxs -->
     <Feature Id="FeatureMain" Title="WireGuard Manager" Level="1">
