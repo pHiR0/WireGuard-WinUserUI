@@ -1,0 +1,11 @@
+﻿WireGuard Manager — Proprietary Non-Commercial License
+
+Copyright (c) 2026 pHiR0
+
+This software is distributed under a proprietary non-commercial license.
+Full terms and conditions are available at:
+
+  https://raw.githubusercontent.com/pHiR0/WireGuard-WinUserUI/main/installer/License.rtf
+
+WireGuard(R) is a registered trademark of Jason A. Donenfeld.
+This project is not affiliated with the WireGuard project or its developers.

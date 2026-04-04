@@ -1,0 +1,16 @@
+﻿VERIFICATION
+Verification is intended to assist the Chocolatey moderators and community
+in verifying that this package's contents are trustworthy.
+
+The MSI installer has been obtained directly from the official GitHub Releases
+page of the project:
+
+  https://github.com/pHiR0/WireGuard-WinUserUI/releases
+
+You can verify the checksum of the downloaded file:
+
+  1. Download the MSI from the release page above.
+  2. Run in PowerShell:
+       (Get-FileHash "WireGuard-WinUserUI-26.04.04.0310-x64.msi" -Algorithm SHA256).Hash
+
+  Expected SHA256: ba0ffc7ceb015b9a220e7aa756f47659ef3f4d9ec3069a2ff7fe12d63df1e41f

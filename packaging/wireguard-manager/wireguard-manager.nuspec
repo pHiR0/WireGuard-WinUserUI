@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>wireguard-manager</id>
+    <version>26.04.04.0310</version>
+    <title>WireGuard Manager</title>
+    <authors>pHiR0</authors>
+    <owners>pHiR0</owners>
+    <projectUrl>https://github.com/pHiR0/WireGuard-WinUserUI</projectUrl>
+    <packageSourceUrl>https://github.com/pHiR0/WireGuard-WinUserUI/tree/main/packaging/wireguard-manager</packageSourceUrl>
+    <projectSourceUrl>https://github.com/pHiR0/WireGuard-WinUserUI/tree/main/src</projectSourceUrl>
+    <iconUrl>https://cdn.jsdelivr.net/gh/pHiR0/WireGuard-WinUserUI@main/src/UI/Assets/icon.png</iconUrl>
+    <licenseUrl>https://raw.githubusercontent.com/pHiR0/WireGuard-WinUserUI/main/installer/License.rtf</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <bugTrackerUrl>https://github.com/pHiR0/WireGuard-WinUserUI/issues</bugTrackerUrl>
+    <tags>wireguard vpn tunnel windows tray manager</tags>
+    <summary>WireGuard tunnel manager for non-admin Windows users via a privileged background service.</summary>
+    <description>## WireGuard Manager
+
+WireGuard for Windows only allows non-admin users to activate and deactivate existing tunnels (via `LimitedOperatorUI`). All other operations — creating, importing, editing or deleting tunnels — still require full administrator rights.
+
+**WireGuard Manager** solves this through a two-layer architecture:
+
+- A **Windows service** running as `LocalSystem` that manages tunnels.
+- A **desktop UI** (no privileges required) that communicates with the service over a secure local Named Pipe.
+
+Users can view, connect, disconnect, create, import, edit and delete tunnels **without UAC or admin rights**, controlled by a role system backed by Windows local groups.
+
+### Features
+
+- Real-time tunnel status (connected / disconnected / pending / error)
+- Connect, disconnect and restart tunnels
+- Create, import, edit and delete WireGuard `.conf` configurations
+- Per-tunnel auto-start
+- Tunnel statistics: local IP, endpoint, last handshake, Rx/Tx, uptime
+- Public IP detection with 7-provider fallback chain
+- Windows Toast notifications on connect/disconnect
+- Tray icon reflecting tunnel state
+- Full audit log at `%ProgramData%\WireGuard-WinUserUI\audit.jsonl`
+- RBAC via Windows local groups (Viewer / Operator / Advanced Operator / Admin)
+
+### Requirements
+
+- Windows 10 (build 17763) or Windows 11
+- [WireGuard for Windows](https://community.chocolatey.org/packages/wireguard) must be installed
+- .NET 8 Runtime (bundled in the MSI installer)
+    </description>
+    <releaseNotes>https://github.com/pHiR0/WireGuard-WinUserUI/releases</releaseNotes>
+    <copyright>Copyright (c) 2026 pHiR0</copyright>
+    <dependencies>
+      <dependency id="wireguard" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>
