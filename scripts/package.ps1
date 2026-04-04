@@ -7,7 +7,7 @@
 
 if ([string]::IsNullOrWhiteSpace($Version))
 {
-    $Version = (Get-Date -Format "yy.MM.dd.HHmm")
+    $Version = (Get-Date -Format "yy.M.d.Hmm")
 }
 
 $ErrorActionPreference = "Stop"

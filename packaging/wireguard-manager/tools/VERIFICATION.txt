@@ -14,3 +14,6 @@ You can verify the checksum of the downloaded file:
        (Get-FileHash "WireGuard-WinUserUI-26.04.04.0310-x64.msi" -Algorithm SHA256).Hash
 
   Expected SHA256: ba0ffc7ceb015b9a220e7aa756f47659ef3f4d9ec3069a2ff7fe12d63df1e41f
+
+NOTE: The Chocolatey package version (26.4.4.310) differs from the MSI filename
+(26.04.04.0310) due to NuGet's automatic removal of leading zeros in version segments.
