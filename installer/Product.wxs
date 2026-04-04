@@ -37,6 +37,12 @@
     <!-- Interfaz de instalador mínima con solo la pantalla de licencia + progreso -->
     <ui:WixUI Id="WixUI_Minimal" />
 
+    <!--
+      Ruta al RTF de licencia mostrado en el diálogo de aceptación.
+      WixVariable es la forma correcta en WiX v5 (WixUILicenseRtf en .wxl no aplica a ficheros).
+    -->
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
     <!-- Referencias a los grupos de componentes definidos en Components.wxs -->
     <Feature Id="FeatureMain" Title="WireGuard Manager" Level="1">
       <ComponentGroupRef Id="CG_Service" />

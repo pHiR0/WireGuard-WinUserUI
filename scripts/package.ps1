@@ -1,9 +1,14 @@
 ﻿param(
     [string]$Configuration = "Release",
-    [string]$Version       = "1.0.0.0",
+    [string]$Version       = "",
     [switch]$SkipPublish,
     [switch]$SkipInstaller
 )
+
+if ([string]::IsNullOrWhiteSpace($Version))
+{
+    $Version = (Get-Date -Format "yy.MM.dd.HHmm")
+}
 
 $ErrorActionPreference = "Stop"
 $Root = Split-Path $PSScriptRoot -Parent

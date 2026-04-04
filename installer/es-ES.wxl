@@ -12,7 +12,9 @@
                  Language="3082"
                  Codepage="1252">
 
-  <!-- Archivo RTF de licencia mostrado en el diálogo de aceptación -->
-  <String Id="WixUILicenseRtf" Value="License.rtf" />
+  <!--
+    La licencia se referencia desde Product.wxs via WixVariable Id="WixUILicenseRtf".
+    Este archivo sirve para que WiX genere el MSI en cultura es-ES (español).
+  -->
 
 </WixLocalization>
