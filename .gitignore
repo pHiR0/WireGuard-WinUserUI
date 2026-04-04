@@ -1,31 +1,63 @@
-﻿# Build
+﻿# ============================================================
+# WireGuard-WinUserUI — .gitignore
+# ============================================================
+
+# ------ Build / compilación --------------------------------
 bin/
 obj/
 artifacts/
 build/
 
-# IDE
+# ------ IDE ------------------------------------------------
 .vs/
 .vscode/
 *.user
 *.suo
+*.userprefs
+.idea/
+*.swp
 
-# Logs
+# ------ Logs -----------------------------------------------
 *.log
+*.log.*
 
-# Test
+# ------ Tests ----------------------------------------------
 TestResults/
+coverage/
+*.coverage
+*.coveragexml
 
-# OS
+# ------ OS -------------------------------------------------
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 .DS_Store
+*.DS_Store
 
-# Packaging output
-*.nupkg
-*.msi
+# ------ Artefactos binarios (usar GitHub Releases) ---------
+# Los binarios compilados (.exe, .msi) no se envían al repo.
+# Usa `.\scripts\package.ps1` para generarlos localmente.
+# Las releases oficiales se distribuyen desde GitHub Releases.
 *.exe
+*.msi
+*.nupkg
 
-# Secrets / local config
+# ------ WiX (instalador) -----------------------------------
+*.wixpdb
+*.wixobj
+*.wixlib
+
+# ------ NuGet / paquetes .NET ------------------------------
+# nuget.config se sí se rastrea (configuración del repo)
+packages/
+*.lock.json
+
+# ------ Secretos / configuración local ---------------------
 appsettings.Development.json
+appsettings.Local.json
 *.pfx
 *.snk
+*.p12
+
+# ------ Publicación (dotnet publish output) ----------------
+publish/
