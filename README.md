@@ -24,7 +24,9 @@ El usuario ve y controla sus túneles **sin necesidad de UAC ni derechos de admi
 
 ## Capturas
 
-> *(en desarrollo — el proyecto fue construido mediante vibe coding con asistencia de IA generativa)*
+| Túneles | Configuración | Acerca de |
+|---------|---------------|-----------|
+| ![Vista de túneles](docs/screenshots/tunnels.png) | ![Configuración](docs/screenshots/settings.png) | ![Acerca de](docs/screenshots/about.png) |
 
 ---
 
