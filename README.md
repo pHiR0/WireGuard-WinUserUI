@@ -11,14 +11,14 @@
 
 ## ¿Qué problema resuelve?
 
-WireGuard para Windows tiene una limitación importante: **su interfaz oficial solo puede ser utilizada por usuarios con privilegios de administrador**. Esto la hace inviable en entornos donde los usuarios no tienen derechos de admin pero necesitan conectarse a túneles VPN de Wireguard.
+WireGuard para Windows permite que usuarios sin privilegios de administrador activen y desactiven túneles existentes, pero **únicamente eso**, y solo si un administrador les ha otorgado previamente el permiso de *Operador de red limitado* mediante el método `LimitedOperatorUI`. Operaciones como crear, importar, editar o eliminar túneles siguen requiriendo derechos de administrador completos.
 
-**WireGuard Manager** soluciona este problema mediante una arquitectura de dos capas:
+**WireGuard Manager** amplía estas capacidades mediante una arquitectura de dos capas que no depende de `LimitedOperatorUI`:
 
 - Un **servicio de Windows** que corre con privilegios de `LocalSystem` y gestiona los túneles.
 - Una **aplicación de escritorio** sin privilegios que se comunica con el servicio a través de un Named Pipe local seguro.
 
-El usuario ve y controla sus túneles **sin necesidad de UAC ni derechos de administrador**, mientras toda la lógica privilegiada permanece aislada en el servicio.
+El usuario puede ver, conectar, desconectar, crear, importar, editar y eliminar túneles **sin necesidad de UAC ni derechos de administrador**, con un sistema de roles granular gestionado por grupos de Windows. Toda la lógica privilegiada permanece aislada en el servicio.
 
 ---
 
