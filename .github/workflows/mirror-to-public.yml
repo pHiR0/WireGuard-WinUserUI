@@ -21,11 +21,16 @@ jobs:
           fetch-depth: 0            # necesario para push con historial completo
           persist-credentials: false  # no persistir GITHUB_TOKEN para que no anule el PAT
 
+      - name: Configurar identidad git
+        run: |
+          git config user.name  "mirror-bot"
+          git config user.email "mirror@noreply.github.com"
+
       - name: Eliminar carpeta privada .dev/ (si existe)
         run: |
           if [ -d ".dev" ]; then
             git rm -rf .dev/
-            git commit -m "chore: strip .dev/ for public mirror" --author="mirror-bot <mirror@noreply.github.com>"
+            git commit -m "chore: strip .dev/ for public mirror"
           fi
 
       - name: Push a repo público
