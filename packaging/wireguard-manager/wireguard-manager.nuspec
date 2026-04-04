@@ -9,8 +9,8 @@
     <projectUrl>https://github.com/pHiR0/WireGuard-WinUserUI</projectUrl>
     <packageSourceUrl>https://github.com/pHiR0/WireGuard-WinUserUI/tree/main/packaging/wireguard-manager</packageSourceUrl>
     <projectSourceUrl>https://github.com/pHiR0/WireGuard-WinUserUI/tree/main/src</projectSourceUrl>
-    <iconUrl>https://cdn.jsdelivr.net/gh/pHiR0/WireGuard-WinUserUI@main/src/UI/Assets/icon.png</iconUrl>
-    <licenseUrl>https://raw.githubusercontent.com/pHiR0/WireGuard-WinUserUI/main/installer/License.rtf</licenseUrl>
+    <iconUrl>https://cdn.jsdelivr.net/gh/pHiR0/WireGuard-WinUserUI@main/src/UI/Assets/icon_256.png</iconUrl>
+    <licenseUrl>https://raw.githubusercontent.com/pHiR0/WireGuard-WinUserUI/main/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <bugTrackerUrl>https://github.com/pHiR0/WireGuard-WinUserUI/issues</bugTrackerUrl>
     <tags>wireguard vpn tunnel windows tray manager</tags>
