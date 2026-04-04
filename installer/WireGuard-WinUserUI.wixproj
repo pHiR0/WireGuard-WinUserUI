@@ -1,0 +1,39 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+
+  <PropertyGroup>
+    <!-- Nombre del MSI de salida -->
+    <OutputName>WireGuard-WinUserUI-Setup</OutputName>
+    <!-- Solo x64 — WireGuard en Windows es 64-bit -->
+    <Platform>x64</Platform>
+    <Configurations>Debug;Release</Configurations>
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+
+  <!--
+    Variables que apuntan a los directorios de publicación de cada proyecto.
+    Ejecuta primero los targets de publicación (ver scripts/package.ps1) antes de
+    construir este proyecto.
+  -->
+  <PropertyGroup>
+    <ServicePublishDir>$(MSBuildThisFileDirectory)..\artifacts\publish\service\</ServicePublishDir>
+    <UIPublishDir>$(MSBuildThisFileDirectory)..\artifacts\publish\ui\</UIPublishDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Product.wxs" />
+    <Compile Include="Directories.wxs" />
+    <Compile Include="Components.wxs" />
+  </ItemGroup>
+
+  <!--
+    Extensiones WiX utilizadas:
+    - WixToolset.Util.wixext  → para condiciones de OS, búsqueda de ficheros, etc.
+    - WixToolset.UI.wixext    → diálogos de instalador integrados (WixUI_Minimal / WixUI_InstallDir)
+  -->
+  <ItemGroup>
+    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
+    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Components.wxs — Componentes de la instalación:
+    · CG_Service  : ejecutable del servicio y registro de Windows Service
+    · CG_UI       : ejecutable de la interfaz de usuario
+    · CG_Shortcuts: accesos directos del menú inicio
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+
+    <!-- ================================================================
+         Servicio de Windows (WireGuard-WinUserUI)
+         ================================================================ -->
+    <ComponentGroup Id="CG_Service" Directory="INSTALLFOLDER">
+
+      <Component Id="C_ServiceExe" Guid="B1C2D3E4-F5A6-7890-BCDE-F12345678901">
+        <!--
+          Fichero principal del servicio.
+          El valor real se inyecta desde la variable $(var.ServicePublishDir) definida
+          en el .wixproj, que apunta a artifacts/publish/service/ tras el dotnet publish.
+        -->
+        <File Id="FILE_ServiceExe"
+              Source="$(var.ServicePublishDir)WireGuard.Service.exe"
+              KeyPath="yes" />
+
+        <!--
+          Instala el proceso como un servicio de Windows.
+            · Name         : nombre interno del servicio (igual que en Program.cs)
+            · DisplayName  : nombre visible en services.msc
+            · Start="auto" : inicio automático con Windows
+            · Account      : LocalSystem para acceder al SCM, registro y red
+        -->
+        <ServiceInstall
+          Id="SI_WireGuardService"
+          Name="WireGuard-WinUserUI"
+          DisplayName="WireGuard Manager Service"
+          Description="Gestiona los túneles WireGuard y el control de acceso basado en roles."
+          Type="ownProcess"
+          Start="auto"
+          ErrorControl="normal"
+          Account="LocalSystem"
+          Interactive="no" />
+
+        <!--
+          Controla el inicio/parada del servicio durante el ciclo de vida del instalador:
+            · Start="install"   : arranca el servicio al instalar
+            · Stop="both"       : para el servicio al instalar (actualización) y al desinstalar
+            · Remove="uninstall": elimina el servicio al desinstalar
+        -->
+        <ServiceControl
+          Id="SC_WireGuardService"
+          ServiceName="WireGuard-WinUserUI"
+          Start="install"
+          Stop="both"
+          Remove="uninstall"
+          Wait="yes" />
+
+      </Component>
+
+    </ComponentGroup>
+
+
+    <!-- ================================================================
+         Interfaz de Usuario
+         ================================================================ -->
+    <ComponentGroup Id="CG_UI" Directory="INSTALLFOLDER">
+
+      <Component Id="C_UIExe" Guid="C2D3E4F5-A6B7-8901-CDEF-123456789012">
+        <File Id="FILE_UIExe"
+              Source="$(var.UIPublishDir)WireGuard.UI.exe"
+              KeyPath="yes" />
+      </Component>
+
+    </ComponentGroup>
+
+
+    <!-- ================================================================
+         Accesos directos (Menú Inicio)
+         ================================================================ -->
+    <ComponentGroup Id="CG_Shortcuts" Directory="DIR_StartMenu">
+
+      <Component Id="C_StartMenuShortcut" Guid="D3E4F5A6-B7C8-9012-DEFA-234567890123">
+        <!--
+          Ancla del componente en el registro para que Windows Installer
+          gestione correctamente la instalación/desinstalación por usuario/máquina.
+        -->
+        <RegistryValue
+          Root="HKLM"
+          Key="Software\WireGuard-WinUserUI"
+          Name="StartMenuShortcut"
+          Type="integer"
+          Value="1"
+          KeyPath="yes" />
+
+        <!-- Acceso directo a la UI en el Menú Inicio -->
+        <Shortcut
+          Id="SC_StartMenu"
+          Directory="DIR_StartMenu"
+          Name="WireGuard Manager"
+          Target="[INSTALLFOLDER]WireGuard.UI.exe"
+          WorkingDirectory="INSTALLFOLDER"
+          Description="Interfaz de gestión de túneles WireGuard" />
+
+        <!-- Limpia la carpeta del Menú Inicio al desinstalar -->
+        <RemoveFolder Id="RF_StartMenuDir" Directory="DIR_StartMenu" On="uninstall" />
+      </Component>
+
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

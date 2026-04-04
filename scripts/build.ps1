@@ -3,13 +3,21 @@
 )
 
 $ErrorActionPreference = "Stop"
+$Root = Split-Path $PSScriptRoot -Parent
 
 Write-Host "=== Build del proyecto ==="
 
-if (Test-Path ".\WireGuard-WinUserUI.sln") {
-    dotnet restore .\WireGuard-WinUserUI.sln
-    dotnet build .\WireGuard-WinUserUI.sln -c $Configuration --no-restore
+$slnPath = Join-Path $Root "WireGuard-WinUserUI.sln"
+if (Test-Path $slnPath)
+{
+    dotnet restore $slnPath
+    dotnet build   $slnPath -c $Configuration --no-restore
 }
-else {
-    Write-Warning "No existe todavía la solución .sln"
+else
+{
+    Write-Host "  Sin .sln — compilando proyectos individuales..."
+    dotnet build "$Root\src\Service\WireGuard.Service.csproj" -c $Configuration
+    dotnet build "$Root\src\UI\WireGuard.UI.csproj"           -c $Configuration
 }
+
+Write-Host "=== Build completado ==="

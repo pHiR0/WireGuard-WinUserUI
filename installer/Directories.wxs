@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Directories.wxs — Estructura de directorios de instalación
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <!-- C:\Program Files\WireGuard-WinUserUI\ -->
+      <Directory Id="INSTALLFOLDER" Name="WireGuard-WinUserUI" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <!-- C:\ProgramData\Microsoft\Windows\Start Menu\Programs\WireGuard Manager\ -->
+      <Directory Id="DIR_StartMenu" Name="WireGuard Manager" />
+    </StandardDirectory>
+
+  </Fragment>
+</Wix>
