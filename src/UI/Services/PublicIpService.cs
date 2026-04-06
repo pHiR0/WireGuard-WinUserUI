@@ -24,24 +24,20 @@ public sealed class PublicIpService : IDisposable
     /// <summary>All available IP-resolution providers in default display order.</summary>
     public static readonly IReadOnlyList<(string Id, string DisplayName)> AllProviders =
     [
-        ("ipify",      "api.ipify.org"),
         ("ipinfo",     "ipinfo.io"),
         ("myipio",     "api.my-ip.io"),
         ("ifconfigme", "ifconfig.me"),
         ("myipio4",    "api4.my-ip.io"),
-        ("amazonaws",  "checkip.amazonaws.com"),
         ("dns",        "DNS (OpenDNS)"),
     ];
 
     private static readonly IReadOnlyDictionary<string, Func<CancellationToken, Task<string?>>> _fetchByProvider =
         new Dictionary<string, Func<CancellationToken, Task<string?>>>
         {
-            ["ipify"]      = ct => FetchFromJsonAsync("https://api.ipify.org?format=json", "ip", ct),
             ["ipinfo"]     = ct => FetchFromJsonAsync("https://ipinfo.io/json", "ip", ct),
             ["myipio"]     = ct => FetchFromJsonAsync("https://api.my-ip.io/v1/ip.json", "ip", ct),
             ["ifconfigme"] = ct => FetchFromPlainTextAsync("https://ifconfig.me/ip", ct),
             ["myipio4"]    = ct => FetchFromPlainTextAsync("https://api4.my-ip.io/v1/ip", ct),
-            ["amazonaws"]  = ct => FetchFromPlainTextAsync("https://checkip.amazonaws.com", ct),
             ["dns"]        = ct => ResolveViaDnsAsync(ct),
         };
 
