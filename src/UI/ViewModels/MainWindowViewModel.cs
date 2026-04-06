@@ -56,6 +56,10 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isRefreshingPublicIp;
 
+    /// <summary>True from startup until the first tunnel list is received from the service.</summary>
+    [ObservableProperty]
+    private bool _isLoadingTunnels = true;
+
     public ObservableCollection<TunnelViewModel> Tunnels { get; } = [];
 
     public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
@@ -112,7 +116,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Settings = new SettingsViewModel();
 
         pipeClient.Disconnected += () =>
-            Dispatcher.UIThread.Post(() => { IsConnected = false; Tunnels.Clear(); });
+            Dispatcher.UIThread.Post(() => { IsConnected = false; IsLoadingTunnels = true; Tunnels.Clear(); });
 
         pipeClient.Reconnected += () =>
             Dispatcher.UIThread.Post(() => { IsConnected = true; });
@@ -158,6 +162,7 @@ public partial class MainWindowViewModel : ViewModelBase
                             CurrentRole = UserRole.None;
                         }
                         IsConnected = true;
+                        IsLoadingTunnels = false;
                         ErrorMessage = string.Empty;
                         SyncTunnelList(tunnels);
                     });

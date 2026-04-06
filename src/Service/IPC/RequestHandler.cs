@@ -29,9 +29,19 @@ public sealed class RequestHandler
         _logger = logger;
     }
 
-    public async Task<IpcResponse> HandleAsync(IpcRequest request, string callingUser, string? callingUserSid, CancellationToken ct)
+    /// <summary>Backward-compatible overload used by unit tests (no SID / token groups).</summary>
+    public Task<IpcResponse> HandleAsync(IpcRequest request, string callingUser, CancellationToken ct)
+        => HandleAsync(request, callingUser, null, null, ct);
+
+    public async Task<IpcResponse> HandleAsync(
+        IpcRequest request, string callingUser, string? callingUserSid,
+        IReadOnlySet<string>? tokenGroupSids, CancellationToken ct)
     {
-        var role = await _roleStore.GetRoleAsync(callingUser, callingUserSid, ct);
+        // Use the fast token-based path when token groups are available;
+        // fall back to the slow group-member-enumeration path otherwise.
+        var role = (_roleStore is IFastRoleStore fast && tokenGroupSids is not null)
+            ? await fast.GetRoleWithTokenAsync(callingUser, callingUserSid, tokenGroupSids, ct)
+            : await _roleStore.GetRoleAsync(callingUser, callingUserSid, ct);
 
         if (!_authService.IsAuthorized(role, request.Command))
         {

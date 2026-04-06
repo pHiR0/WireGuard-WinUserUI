@@ -20,7 +20,7 @@ namespace WireGuard.Service.Auth;
 ///   "Wireguard UI - Visualizador"            → Viewer
 ///   (none of the above)                      → None
 /// </summary>
-public sealed class WindowsGroupRoleStore : IRoleStore
+public sealed class WindowsGroupRoleStore : IFastRoleStore
 {
     internal const string GroupAdministrator      = "Wireguard UI - Administrator";
     internal const string GroupAdvancedOperator   = "Wireguard UI - Operador avanzado";
@@ -30,15 +30,86 @@ public sealed class WindowsGroupRoleStore : IRoleStore
 
     private readonly ILogger<WindowsGroupRoleStore> _logger;
 
+    /// <summary>
+    /// Lazy map of local group SID → UserRole, resolved once at startup.
+    /// Used by the fast token-based path so no DC enumeration is needed at runtime.
+    /// </summary>
+    private readonly Lazy<IReadOnlyDictionary<string, UserRole>> _groupSidToRole;
+
     public WindowsGroupRoleStore(ILogger<WindowsGroupRoleStore> logger)
     {
         _logger = logger;
+        _groupSidToRole = new Lazy<IReadOnlyDictionary<string, UserRole>>(
+            ResolveGroupSids, LazyThreadSafetyMode.PublicationOnly);
+        // Pre-warm: resolve group SIDs in the background so the first IPC call is fast.
+        _ = Task.Run(() => { _ = _groupSidToRole.Value; });
     }
 
     public Task<UserRole> GetRoleAsync(string username, string? userSid = null, CancellationToken ct = default)
     {
         var role = ResolveRole(username, userSid);
         return Task.FromResult(role);
+    }
+
+    public Task<UserRole> GetRoleWithTokenAsync(
+        string username, string? userSid, IReadOnlySet<string> tokenGroupSids, CancellationToken ct = default)
+    {
+        // Fast path: check the caller's token groups against pre-resolved local group SIDs.
+        // Token groups are computed by the OS at logon — no DC query at runtime.
+        var role = ResolveRoleFromToken(tokenGroupSids);
+        _logger.LogDebug("User '{User}' resolved to role {Role} via token groups (fast path)", username, role);
+        return Task.FromResult(role);
+    }
+
+    // ──────────────────────────────────────────
+    // Fast token-based path
+    // ──────────────────────────────────────────
+
+    /// <summary>
+    /// Resolves the WireGuard group SIDs (and Builtin\Administrators) once at startup.
+    /// These are stable for the lifetime of the service — groups don't change SID.
+    /// </summary>
+    private IReadOnlyDictionary<string, UserRole> ResolveGroupSids()
+    {
+        var result = new Dictionary<string, UserRole>(StringComparer.OrdinalIgnoreCase);
+        // Builtin\Administrators has a well-known SID — no lookup needed.
+        result[BuiltinAdminSid] = UserRole.Admin;
+        try
+        {
+            using var ctx = new PrincipalContext(ContextType.Machine);
+            foreach (var (groupName, role) in GroupRoleMap())
+            {
+                try
+                {
+                    using var group = GroupPrincipal.FindByIdentity(ctx, groupName);
+                    if (group?.Sid?.Value is { } sid)
+                        result[sid] = role;
+                }
+                catch { /* group doesn't exist on this machine — skip */ }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to pre-resolve WireGuard group SIDs — fast path disabled");
+        }
+        _logger.LogDebug("Resolved {Count} group SID(s) for token-based role check", result.Count);
+        return result;
+    }
+
+    /// <summary>
+    /// Checks the caller's token group SIDs against the pre-resolved group map.
+    /// O(n) over token groups (typically 20-50 SIDs) — no network, no disk.
+    /// </summary>
+    private UserRole ResolveRoleFromToken(IReadOnlySet<string> tokenGroupSids)
+    {
+        var groupMap = _groupSidToRole.Value;
+        var highest = UserRole.None;
+        foreach (var sid in tokenGroupSids)
+        {
+            if (groupMap.TryGetValue(sid, out var role) && role > highest)
+                highest = role;
+        }
+        return highest;
     }
 
     private UserRole ResolveRole(string username, string? userSid)

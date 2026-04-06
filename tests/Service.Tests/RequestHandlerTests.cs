@@ -1,4 +1,4 @@
-using Moq;
+﻿using Moq;
 using Microsoft.Extensions.Logging;
 using WireGuard.Service.Audit;
 using WireGuard.Service.Auth;
@@ -31,7 +31,7 @@ public class RequestHandlerTests
     public async Task ListTunnels_AsViewer_ReturnsSuccess()
     {
         // Arrange
-        _roleStoreMock.Setup(x => x.GetRoleAsync("testuser", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("testuser", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Viewer);
 
         var tunnels = new List<TunnelInfo>
@@ -62,7 +62,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task StartTunnel_AsViewer_ReturnsDenied()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("viewer", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("viewer", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Viewer);
 
         var request = new IpcRequest
@@ -81,7 +81,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task StartTunnel_AsOperator_ReturnsSuccess()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("operator", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("operator", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Operator);
 
         _tunnelManagerMock.Setup(x => x.StartTunnelAsync("tunnel1", It.IsAny<CancellationToken>()))
@@ -103,7 +103,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task StartTunnel_WithoutTunnelName_ReturnsFail()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("operator", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("operator", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Operator);
 
         var request = new IpcRequest
@@ -121,7 +121,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task GetCurrentUser_ReturnsUserInfo()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Admin);
 
         var request = new IpcRequest
@@ -142,7 +142,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task UnknownUser_IsDenied()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("unknown", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("unknown", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.None);
 
         var request = new IpcRequest
@@ -160,7 +160,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task AuditLogger_IsCalledOnSuccess()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("operator", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("operator", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Operator);
         _tunnelManagerMock.Setup(x => x.ListTunnelsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<TunnelInfo>());
@@ -179,7 +179,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task AuditLogger_IsCalledOnDenied()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("viewer", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("viewer", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Viewer);
 
         var request = new IpcRequest
@@ -204,7 +204,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task RestartTunnel_AsOperator_ReturnsSuccess()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("operator", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("operator", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Operator);
         _tunnelManagerMock.Setup(x => x.RestartTunnelAsync("tunnel1", It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -219,7 +219,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task RestartTunnel_AsViewer_Denied()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("viewer", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("viewer", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Viewer);
 
         var request = new IpcRequest { Command = IpcCommand.RestartTunnel, TunnelName = "tunnel1", RequestId = "r2" };
@@ -232,7 +232,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task ImportTunnel_AsAdvancedOperator_ReturnsSuccess()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.AdvancedOperator);
         _tunnelManagerMock.Setup(x => x.ImportTunnelAsync("test", It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -254,7 +254,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task ImportTunnel_MissingConfContent_ReturnsFail()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.AdvancedOperator);
 
         var request = new IpcRequest
@@ -273,7 +273,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task DeleteTunnel_AsAdvancedOperator_ReturnsSuccess()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.AdvancedOperator);
         _tunnelManagerMock.Setup(x => x.DeleteTunnelAsync("tunnel1", It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -288,7 +288,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task DeleteTunnel_AsOperator_Denied()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("operator", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("operator", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Operator);
 
         var request = new IpcRequest { Command = IpcCommand.DeleteTunnel, TunnelName = "tunnel1", RequestId = "r6" };
@@ -301,7 +301,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task ListUsers_AsAdmin_ReturnsUsers()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Admin);
         _roleStoreMock.Setup(x => x.ListUsersAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<UserInfo>
@@ -322,7 +322,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task ListUsers_AsAdvancedOperator_Denied()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.AdvancedOperator);
 
         var request = new IpcRequest { Command = IpcCommand.ListUsers, RequestId = "r8" };
@@ -335,7 +335,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task SetUserRole_AsAdmin_ReturnsSuccess()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Admin);
         _roleStoreMock.Setup(x => x.SetRoleAsync("newuser", UserRole.Operator, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -356,7 +356,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task SetUserRole_MissingUsername_ReturnsFail()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Admin);
 
         var request = new IpcRequest { Command = IpcCommand.SetUserRole, Role = UserRole.Viewer, RequestId = "r10" };
@@ -369,7 +369,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task SetUserRole_MissingRole_ReturnsFail()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Admin);
 
         var request = new IpcRequest { Command = IpcCommand.SetUserRole, Username = "user1", RequestId = "r11" };
@@ -382,7 +382,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task RemoveUser_AsAdmin_ReturnsSuccess()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Admin);
         _roleStoreMock.Setup(x => x.RemoveUserAsync("olduser", It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -397,7 +397,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task ExportTunnel_AsAdmin_ReturnsBase64Content()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("admin", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Admin);
         _tunnelManagerMock.Setup(x => x.ExportTunnelAsync("tunnel1", It.IsAny<CancellationToken>()))
             .ReturnsAsync("[Interface]\nPrivateKey = test");
@@ -415,7 +415,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task ExportTunnel_AsAdvancedOperator_Denied()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.AdvancedOperator);
 
         var request = new IpcRequest { Command = IpcCommand.ExportTunnel, TunnelName = "tunnel1", RequestId = "r14" };
@@ -430,7 +430,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task SetTunnelAutoStart_AsAdvancedOperator_ReturnsSuccess()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.AdvancedOperator);
         _tunnelManagerMock.Setup(x => x.SetTunnelAutoStartAsync("tunnel1", true, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -451,7 +451,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task SetTunnelAutoStart_AsOperator_Denied()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("operator", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("operator", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.Operator);
 
         var request = new IpcRequest
@@ -470,7 +470,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task SetTunnelAutoStart_MissingAutoStart_ReturnsFail()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.AdvancedOperator);
 
         var request = new IpcRequest
@@ -488,7 +488,7 @@ public class RequestHandlerTests
     [Fact]
     public async Task SetTunnelAutoStart_MissingTunnelName_ReturnsFail()
     {
-        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<CancellationToken>()))
+        _roleStoreMock.Setup(x => x.GetRoleAsync("advop", It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(UserRole.AdvancedOperator);
 
         var request = new IpcRequest

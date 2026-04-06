@@ -141,6 +141,17 @@
                                Width="280" Height="280"
                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                IsHitTestVisible="False"/>
+
+                        <!-- Loading spinner: visible until first tunnel response arrives -->
+                        <StackPanel IsVisible="{Binding IsLoadingTunnels}"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    Spacing="10">
+                            <ProgressBar IsIndeterminate="True" Width="180"/>
+                            <TextBlock Text="Conectando al servicio..."
+                                       HorizontalAlignment="Center"
+                                       Foreground="#94A3B8" FontSize="12"/>
+                        </StackPanel>
+
                         <ScrollViewer>
                         <ItemsControl ItemsSource="{Binding Tunnels}">
                             <ItemsControl.ItemTemplate>

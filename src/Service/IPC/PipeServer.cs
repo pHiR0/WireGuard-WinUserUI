@@ -5,6 +5,7 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.Extensions.Logging;
 using WireGuard.Shared.IPC;
+using WindowsIdentity = System.Security.Principal.WindowsIdentity;
 
 namespace WireGuard.Service.IPC;
 
@@ -197,10 +198,36 @@ public sealed class PipeServer
 
             _logger.LogInformation("Pipe client connected: '{User}' (SID {Sid})", callingUser, callingSid);
 
+            // Capture the caller's token group SIDs via impersonation.
+            // Token groups are resolved by the OS at logon — no DC query at runtime.
+            // This enables the fast role-check path in WindowsGroupRoleStore.
+            HashSet<string>? tokenGroupSids = null;
+            try
+            {
+                pipe.RunAsClient(() =>
+                {
+                    using var identity = WindowsIdentity.GetCurrent();
+                    if (identity.Groups is { } groups)
+                    {
+                        tokenGroupSids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        foreach (IdentityReference g in groups)
+                        {
+                            if (g is SecurityIdentifier sid)
+                                tokenGroupSids.Add(sid.Value);
+                        }
+                    }
+                });
+                _logger.LogDebug("Captured {Count} token group SID(s) for '{User}'", tokenGroupSids?.Count ?? 0, callingUser);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "RunAsClient unavailable for '{User}' — role check will use slow path", callingUser);
+            }
+
             try
             {
                 // Process the first message we already read
-                await ProcessMessageAsync(pipe, firstData, callingUser, callingSid, ct);
+                await ProcessMessageAsync(pipe, firstData, callingUser, callingSid, tokenGroupSids, ct);
 
                 // Process subsequent messages
                 while (pipe.IsConnected && !ct.IsCancellationRequested)
@@ -208,7 +235,7 @@ public sealed class PipeServer
                     var data = await PipeMessageIO.ReadMessageAsync(pipe, ct);
                     if (data is null) break;
 
-                    await ProcessMessageAsync(pipe, data, callingUser, callingSid, ct);
+                    await ProcessMessageAsync(pipe, data, callingUser, callingSid, tokenGroupSids, ct);
                 }
             }
             finally
@@ -234,7 +261,7 @@ public sealed class PipeServer
     }
 
     private async Task ProcessMessageAsync(
-        NamedPipeServerStream pipe, byte[] data, string callingUser, string? callingSid, CancellationToken ct)
+        NamedPipeServerStream pipe, byte[] data, string callingUser, string? callingSid, IReadOnlySet<string>? tokenGroupSids, CancellationToken ct)
     {
         _logger.LogDebug("Request from '{User}'", callingUser);
 
@@ -247,7 +274,7 @@ public sealed class PipeServer
             return;
         }
 
-        var response = await _requestHandler.HandleAsync(request, callingUser, callingSid, ct);
+        var response = await _requestHandler.HandleAsync(request, callingUser, callingSid, tokenGroupSids, ct);
         await PipeMessageIO.WriteMessageAsync(pipe, response.Serialize(), ct);
     }
 }
