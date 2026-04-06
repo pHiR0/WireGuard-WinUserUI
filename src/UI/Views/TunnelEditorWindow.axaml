@@ -8,8 +8,8 @@
         x:DataType="vm:TunnelEditorViewModel"
         Title="{Binding WindowTitle}"
         Icon="/Assets/icon.ico"
-        Width="680" Height="560"
-        MinWidth="540" MinHeight="460"
+        Width="680" Height="640"
+        MinWidth="540" MinHeight="540"
         WindowStartupLocation="CenterOwner"
         RequestedThemeVariant="Dark"
         CanResize="True">
@@ -33,6 +33,37 @@
                     Command="{Binding SaveCommand}"
                     IsEnabled="{Binding IsValid}"
                     Classes="accent"/>
+        </StackPanel>
+
+        <!-- Validation badges (outside ScrollViewer — always visible) -->
+        <StackPanel DockPanel.Dock="Bottom" Spacing="4" Margin="0,8,0,0">
+            <!-- Validation message (success) -->
+            <Border Background="#0D2B1A" CornerRadius="4" Padding="10,6"
+                    IsVisible="{Binding IsValid}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="✔" Foreground="#4ADE80" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ValidationMessage}" Foreground="#86EFAC"
+                               TextWrapping="Wrap" FontSize="12" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Validation errors -->
+            <Border Background="#3D1010" CornerRadius="4" Padding="10,6"
+                    IsVisible="{Binding ValidationMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding ValidationMessage}" Foreground="#FCA5A5"
+                           TextWrapping="Wrap" FontSize="12"
+                           IsVisible="{Binding !IsValid}"/>
+            </Border>
+
+            <!-- API/service error -->
+            <Border Background="#3D1010" CornerRadius="4" Padding="10,6"
+                    IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="✖" Foreground="#F87171" VerticalAlignment="Top" Margin="0,1,0,0"/>
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="#FCA5A5"
+                               TextWrapping="Wrap" FontSize="12"/>
+                </StackPanel>
+            </Border>
         </StackPanel>
 
         <ScrollViewer>
@@ -73,34 +104,6 @@
                                  Watermark="Pega aquí el contenido .conf o usa el botón Cargar..."
                                  FontFamily="Consolas, Courier New, monospace"
                                  FontSize="12"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Validation message (success/warnings) -->
-                <Border Background="#0D2B1A" CornerRadius="4" Padding="10,6"
-                        IsVisible="{Binding IsValid}">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="✔" Foreground="#4ADE80" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding ValidationMessage}" Foreground="#86EFAC"
-                                   TextWrapping="Wrap" FontSize="12" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Validation errors -->
-                <Border Background="#3D1010" CornerRadius="4" Padding="10,6"
-                        IsVisible="{Binding ValidationMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                    <TextBlock Text="{Binding ValidationMessage}" Foreground="#FCA5A5"
-                               TextWrapping="Wrap" FontSize="12"
-                               IsVisible="{Binding !IsValid}"/>
-                </Border>
-
-                <!-- API/service error -->
-                <Border Background="#3D1010" CornerRadius="4" Padding="10,6"
-                        IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="✖" Foreground="#F87171" VerticalAlignment="Top" Margin="0,1,0,0"/>
-                        <TextBlock Text="{Binding ErrorMessage}" Foreground="#FCA5A5"
-                                   TextWrapping="Wrap" FontSize="12"/>
                     </StackPanel>
                 </Border>
 
