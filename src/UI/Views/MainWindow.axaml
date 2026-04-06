@@ -551,6 +551,17 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Licencia -->
+                        <Border Background="#252B3A" CornerRadius="8" Padding="16">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Licencia" FontWeight="SemiBold" FontSize="14"/>
+                                <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#CBD5E1">
+                                    <Run Text="Este programa es software libre bajo la "/><Run Text="GNU GPLv2" FontWeight="SemiBold"/><Run Text=".&#x0a;Puede redistribuirlo y/o modificarlo bajo los términos de la licencia.&#x0a;&#x0a;"/>
+                                    <Run Text="Copyright © 2026 pHiR0" FontStyle="Italic" Foreground="#94A3B8"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
