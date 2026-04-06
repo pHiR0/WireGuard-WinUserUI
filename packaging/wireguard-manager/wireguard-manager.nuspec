@@ -10,6 +10,7 @@
     <packageSourceUrl>https://github.com/pHiR0/WireGuard-WinUserUI/tree/main/packaging/wireguard-manager</packageSourceUrl>
     <projectSourceUrl>https://github.com/pHiR0/WireGuard-WinUserUI/tree/main/src</projectSourceUrl>
     <iconUrl>https://cdn.jsdelivr.net/gh/pHiR0/WireGuard-WinUserUI@main/src/UI/Assets/icon_256.png</iconUrl>
+    <license type="expression">GPL-2.0-only</license>
     <licenseUrl>https://raw.githubusercontent.com/pHiR0/WireGuard-WinUserUI/main/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <bugTrackerUrl>https://github.com/pHiR0/WireGuard-WinUserUI/issues</bugTrackerUrl>
