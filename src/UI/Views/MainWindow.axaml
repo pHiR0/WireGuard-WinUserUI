@@ -42,8 +42,10 @@
                 IsVisible="{Binding !IsWireGuardInstalled}">
             <StackPanel Orientation="Horizontal" Spacing="10">
                 <TextBlock Text="⚠" Foreground="#FCD34D" FontSize="16" VerticalAlignment="Center"/>
-                <TextBlock Foreground="#FCD34D" TextWrapping="Wrap" VerticalAlignment="Center"
-                           Text="WireGuard no está instalado. Las operaciones sobre túneles no estarán disponibles. Descárguelo desde wireguard.com e instálelo para continuar."/>
+                <StackPanel>
+                    <TextBlock Foreground="#FCD34D" Text="WireGuard no está instalado. Las operaciones sobre túneles no estarán disponibles."/>
+                    <TextBlock Foreground="#FCD34D" Text="Descárguelo desde wireguard.com e instálelo para continuar."/>
+                </StackPanel>
             </StackPanel>
         </Border>
 
