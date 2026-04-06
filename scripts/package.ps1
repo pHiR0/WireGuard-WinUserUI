@@ -7,7 +7,10 @@
 
 if ([string]::IsNullOrWhiteSpace($Version))
 {
-    $Version = (Get-Date -Format "yy.M.d.Hmm")
+    $now = Get-Date
+    # Normalize version to avoid leading zeros (e.g., "005" -> "5")
+    # NuGet/Chocolatey strip leading zeros, so we do it upfront for consistency
+    $Version = "{0}.{1}.{2}.{3}" -f $now.ToString("yy"), $now.Month, $now.Day, ([int]($now.ToString("Hmm")))
 }
 
 $ErrorActionPreference = "Stop"
