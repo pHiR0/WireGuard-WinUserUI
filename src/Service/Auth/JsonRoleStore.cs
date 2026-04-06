@@ -32,7 +32,7 @@ public sealed class JsonRoleStore : IRoleStore
         _filePath = Path.Combine(dataDir, "roles.json");
     }
 
-    public async Task<UserRole> GetRoleAsync(string username, CancellationToken ct = default)
+    public async Task<UserRole> GetRoleAsync(string username, string? userSid = null, CancellationToken ct = default)
     {
         var users = await LoadAsync(ct);
         var normalized = username.ToLowerInvariant();
