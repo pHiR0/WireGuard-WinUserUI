@@ -95,7 +95,7 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="&#x1F5A7;" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#x1F5A7;" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="Túneles" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -107,14 +107,14 @@
                         <Button Command="{Binding NewTunnelCommand}"
                                 ToolTip.Tip="Crear nuevo túnel">
                             <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="＋" FontSize="13"/>
+                                <TextBlock Text="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center"/>
                                 <TextBlock Text="Nuevo túnel" FontSize="12"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding ImportTunnelFileCommand}"
                                 ToolTip.Tip="Importar configuración desde .conf">
                             <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="📂" FontSize="11"/>
+                                <TextBlock Text="&#xED25;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center"/>
                                 <TextBlock Text="Importar .conf" FontSize="12"/>
                             </StackPanel>
                         </Button>
@@ -157,7 +157,7 @@
                                                         Classes="accent"
                                                         ToolTip.Tip="Conectar">
                                                     <StackPanel Orientation="Horizontal" Spacing="4">
-                                                        <TextBlock Text="▶" FontSize="11"/>
+                                                        <TextBlock Text="&#xE768;" FontFamily="Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center"/>
                                                         <TextBlock Text="Conectar" FontSize="12"/>
                                                     </StackPanel>
                                                 </Button>
@@ -167,7 +167,7 @@
                                                         IsEnabled="{Binding !IsLoading}"
                                                         ToolTip.Tip="Desconectar">
                                                     <StackPanel Orientation="Horizontal" Spacing="4">
-                                                        <TextBlock Text="⏹" FontSize="11"/>
+                                                        <TextBlock Text="&#xE71A;" FontFamily="Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center"/>
                                                         <TextBlock Text="Desconectar" FontSize="12"/>
                                                     </StackPanel>
                                                 </Button>
@@ -177,7 +177,7 @@
                                                         IsEnabled="{Binding !IsLoading}"
                                                         ToolTip.Tip="Reiniciar">
                                                     <StackPanel Orientation="Horizontal" Spacing="4">
-                                                        <TextBlock Text="↺" FontSize="11"/>
+                                                        <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center"/>
                                                         <TextBlock Text="Reiniciar" FontSize="12"/>
                                                     </StackPanel>
                                                 </Button>
@@ -187,7 +187,7 @@
                                                         IsVisible="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).IsAdvancedOperator}"
                                                         ToolTip.Tip="Editar configuración">
                                                     <StackPanel Orientation="Horizontal" Spacing="4">
-                                                        <TextBlock Text="✏" FontSize="11"/>
+                                                        <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center"/>
                                                         <TextBlock Text="Editar" FontSize="12"/>
                                                     </StackPanel>
                                                 </Button>
@@ -197,7 +197,7 @@
                                                         Foreground="#F87171"
                                                         ToolTip.Tip="Eliminar túnel">
                                                     <StackPanel Orientation="Horizontal" Spacing="4">
-                                                        <TextBlock Text="🗑" FontSize="11"/>
+                                                        <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center"/>
                                                         <TextBlock Text="Eliminar" FontSize="12"/>
                                                     </StackPanel>
                                                 </Button>
@@ -206,7 +206,7 @@
                                                         IsEnabled="{Binding !IsLoading}"
                                                         ToolTip.Tip="Exportar configuración">
                                                     <StackPanel Orientation="Horizontal" Spacing="4">
-                                                        <TextBlock Text="⬇" FontSize="11"/>
+                                                        <TextBlock Text="&#xE896;" FontFamily="Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center"/>
                                                         <TextBlock Text="Exportar" FontSize="12"/>
                                                     </StackPanel>
                                                 </Button>
@@ -282,7 +282,7 @@
                      IsVisible="{Binding IsAdmin}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="&#x1F4CB;" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#x1F4CB;" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="Auditoría" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -360,7 +360,7 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="&#x2699;" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#x2699;" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="Configuración" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -467,7 +467,7 @@
             <TabItem x:DataType="vm:MainWindowViewModel">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="&#x2139;" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#x2139;" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="Acerca de" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
