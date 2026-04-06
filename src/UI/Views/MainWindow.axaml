@@ -110,7 +110,7 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="&#xE701;" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#xE839;" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="Túneles" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -297,7 +297,7 @@
                      IsVisible="{Binding IsAdmin}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#xE8F9;" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="Auditoría" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
