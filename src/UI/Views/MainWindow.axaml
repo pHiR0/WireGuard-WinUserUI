@@ -551,22 +551,6 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Licencia -->
-                        <Border Background="#252B3A" CornerRadius="8" Padding="16">
-                            <StackPanel Spacing="8">
-                                <TextBlock Text="Licencia" FontWeight="SemiBold" FontSize="14"/>
-                                <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="#CBD5E1">
-                                    <Run Text="Este software es "/>
-                                    <Run Text="software libre" FontWeight="SemiBold" Foreground="#4ADE80"/>
-                                    <Run Text=" distribuido bajo la "/>
-                                    <Run Text="GNU General Public License v2.0 (GPLv2)" FontWeight="SemiBold"/>
-                                    <Run Text=". Puede usar, modificar y redistribuir este programa bajo los términos de la GPLv2."/>
-                                </TextBlock>
-                                <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#64748B" Margin="0,4,0,0"
-                                           Text="WireGuard® es una marca registrada de Jason A. Donenfeld. Este proyecto no está afiliado con el proyecto WireGuard. WireGuard también está licenciado bajo GPLv2."/>
-                            </StackPanel>
-                        </Border>
-
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

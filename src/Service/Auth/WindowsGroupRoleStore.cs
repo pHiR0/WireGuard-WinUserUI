@@ -57,7 +57,21 @@ public sealed class WindowsGroupRoleStore : IFastRoleStore
         // Fast path: check the caller's token groups against pre-resolved local group SIDs.
         // Token groups are computed by the OS at logon — no DC query at runtime.
         var role = ResolveRoleFromToken(tokenGroupSids);
-        _logger.LogDebug("User '{User}' resolved to role {Role} via token groups (fast path)", username, role);
+
+        if (role == UserRole.None)
+        {
+            // The user's token doesn't contain any WireGuard group SID. This can happen when
+            // the user was added to a local group AFTER their current logon session started
+            // (token groups are frozen at logon time). Fall back to the slow path which queries
+            // actual group membership in real-time.
+            _logger.LogDebug("User '{User}' not found via token groups — falling back to group enumeration", username);
+            role = ResolveRole(username, userSid);
+        }
+        else
+        {
+            _logger.LogDebug("User '{User}' resolved to role {Role} via token groups (fast path)", username, role);
+        }
+
         return Task.FromResult(role);
     }
 
@@ -153,7 +167,7 @@ public sealed class WindowsGroupRoleStore : IFastRoleStore
     /// Checks Builtin\Administrators membership. Tries username lookup first; if the user
     /// cannot be found in the local SAM (domain accounts), falls back to SID enumeration.
     /// </summary>
-    private bool IsInBuiltinAdmins(PrincipalContext ctx, string localName, string? userSid)
+    private static bool IsInBuiltinAdmins(PrincipalContext ctx, string localName, string? userSid)
     {
         try
         {
@@ -170,7 +184,7 @@ public sealed class WindowsGroupRoleStore : IFastRoleStore
     /// If that fails (e.g. domain user not in local SAM), enumerates group members
     /// and compares SIDs — which works for domain accounts added to local groups.
     /// </summary>
-    private bool IsMemberOfLocalGroup(PrincipalContext ctx, string localName, string? userSid, string groupName)
+    private static bool IsMemberOfLocalGroup(PrincipalContext ctx, string localName, string? userSid, string groupName)
     {
         try
         {
@@ -186,53 +200,25 @@ public sealed class WindowsGroupRoleStore : IFastRoleStore
     /// local accounts). Falls back to enumerating members and comparing SIDs (required for
     /// domain accounts, UPN accounts, and other non-local users added to local groups).
     /// </summary>
-    private bool IsMemberBySidOrName(GroupPrincipal group, string localName, string? userSid)
+    private static bool IsMemberBySidOrName(GroupPrincipal group, string localName, string? userSid)
     {
         // Fast path: try to find by local SAM name and use IsMemberOf
         try
         {
             using var user = UserPrincipal.FindByIdentity(group.Context, IdentityType.SamAccountName, localName);
             if (user is not null)
-            {
-                var isMember = user.IsMemberOf(group);
-                _logger.LogDebug("User '{User}' found in local SAM, IsMemberOf('{Group}') = {IsMember}", localName, group.Name, isMember);
-                return isMember;
-            }
+                return user.IsMemberOf(group);
         }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "UserPrincipal.FindByIdentity failed for '{User}' — falling back to SID check", localName);
-        }
+        catch { /* local resolution failed — fall through to SID-based check */ }
 
         // Fallback: SID-based enumeration (works for domain accounts)
-        if (string.IsNullOrEmpty(userSid))
-        {
-            _logger.LogDebug("No userSid provided for '{User}', cannot check SID-based membership in '{Group}'", localName, group.Name);
-            return false;
-        }
-
+        if (string.IsNullOrEmpty(userSid)) return false;
         try
         {
-            _logger.LogDebug("Enumerating members of '{Group}' to find SID {Sid}...", group.Name, userSid);
             using var members = group.GetMembers(recursive: true);
-            foreach (var member in members)
-            {
-                var memberSid = member.Sid?.Value;
-                _logger.LogTrace("  Member: {MemberName} (SID: {MemberSid})", member.Name, memberSid ?? "null");
-                if (string.Equals(memberSid, userSid, StringComparison.OrdinalIgnoreCase))
-                {
-                    _logger.LogDebug("Match found: user SID {Sid} is in group '{Group}'", userSid, group.Name);
-                    return true;
-                }
-            }
-            _logger.LogDebug("No match: user SID {Sid} not found in group '{Group}' members", userSid, group.Name);
-            return false;
+            return members.Any(m => string.Equals(m.Sid?.Value, userSid, StringComparison.OrdinalIgnoreCase));
         }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "GetMembers() failed for group '{Group}' — cannot verify membership for user '{User}'", group.Name, localName);
-            return false;
-        }
+        catch { return false; }
     }
 
     // ──────────────────────────────────────────

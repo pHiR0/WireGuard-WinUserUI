@@ -1,21 +1,11 @@
-﻿WireGuard Manager — Licencia Pública General de GNU v2.0 (GPLv2)
+﻿WireGuard Manager — Proprietary Non-Commercial License
 
 Copyright (c) 2026 pHiR0
 
-Este programa es software libre: usted puede redistribuirlo y/o modificarlo
-bajo los términos de la Licencia Pública General de GNU tal como fue publicada
-por la Free Software Foundation, ya sea la versión 2 de la Licencia, o
-(a su elección) cualquier versión posterior.
+This software is distributed under a proprietary non-commercial license.
+Full terms and conditions are available at:
 
-Este programa se distribuye con la esperanza de que sea útil, pero
-SIN NINGUNA GARANTÍA, incluso sin la garantía implícita de COMERCIABILIDAD
-o IDONEIDAD PARA UN PROPÓSITO PARTICULAR. Consulte la Licencia Pública
-General de GNU para más detalles.
+  https://raw.githubusercontent.com/pHiR0/WireGuard-WinUserUI/main/installer/License.rtf
 
-Para los términos completos de la licencia, consulte:
-
-  https://raw.githubusercontent.com/pHiR0/WireGuard-WinUserUI/main/LICENSE
-  https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
-
-WireGuard® es una marca registrada de Jason A. Donenfeld.
-Este proyecto no está afiliado con el proyecto WireGuard ni con sus desarrolladores.
+WireGuard(R) is a registered trademark of Jason A. Donenfeld.
+This project is not affiliated with the WireGuard project or its developers.

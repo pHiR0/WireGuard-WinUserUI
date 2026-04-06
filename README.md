@@ -5,7 +5,7 @@
 [![CI](https://github.com/pHiR0/WireGuard-WinUserUI/actions/workflows/ci.yml/badge.svg)](https://github.com/pHiR0/WireGuard-WinUserUI/actions/workflows/ci.yml)
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4)](https://www.microsoft.com/windows)
-[![License](https://img.shields.io/badge/license-GPL--2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Propietaria%20%E2%80%93%20no%20comercial-red)](#licencia)
 
 ---
 
@@ -176,14 +176,6 @@ Este proyecto fue desarrollado mediante **vibe coding** — una metodología de 
 
 ## Licencia
 
-Este software se distribuye bajo la **GNU General Public License v2.0** (GPLv2). Consulta el archivo [LICENSE](LICENSE) para los términos completos.
+Este software se distribuye bajo una licencia propietaria de uso personal **no comercial**. Consulta el archivo [installer/License.rtf](installer/License.rtf) para los Términos y Condiciones completos.
 
-**En resumen:**
-- ✅ Uso comercial y no comercial
-- ✅ Modificación y redistribución
-- ✅ Uso privado
-- ⚠️ Debes distribuir el código fuente con las modificaciones
-- ⚠️ Los trabajos derivados deben usar la misma licencia (GPLv2)
-- ❌ Sin garantía
-
-> WireGuard® es una marca registrada de Jason A. Donenfeld. Este proyecto no está afiliado con el proyecto WireGuard ni con sus desarrolladores. El código de WireGuard también está bajo GPLv2.
+> WireGuard® es una marca registrada de Jason A. Donenfeld. Este proyecto no está afiliado con el proyecto WireGuard ni con sus desarrolladores.
