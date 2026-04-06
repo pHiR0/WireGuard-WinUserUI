@@ -200,7 +200,7 @@ public sealed class PipeServer
             try
             {
                 // Process the first message we already read
-                await ProcessMessageAsync(pipe, firstData, callingUser, ct);
+                await ProcessMessageAsync(pipe, firstData, callingUser, callingSid, ct);
 
                 // Process subsequent messages
                 while (pipe.IsConnected && !ct.IsCancellationRequested)
@@ -208,7 +208,7 @@ public sealed class PipeServer
                     var data = await PipeMessageIO.ReadMessageAsync(pipe, ct);
                     if (data is null) break;
 
-                    await ProcessMessageAsync(pipe, data, callingUser, ct);
+                    await ProcessMessageAsync(pipe, data, callingUser, callingSid, ct);
                 }
             }
             finally
@@ -234,7 +234,7 @@ public sealed class PipeServer
     }
 
     private async Task ProcessMessageAsync(
-        NamedPipeServerStream pipe, byte[] data, string callingUser, CancellationToken ct)
+        NamedPipeServerStream pipe, byte[] data, string callingUser, string? callingSid, CancellationToken ct)
     {
         _logger.LogDebug("Request from '{User}'", callingUser);
 
@@ -247,7 +247,7 @@ public sealed class PipeServer
             return;
         }
 
-        var response = await _requestHandler.HandleAsync(request, callingUser, ct);
+        var response = await _requestHandler.HandleAsync(request, callingUser, callingSid, ct);
         await PipeMessageIO.WriteMessageAsync(pipe, response.Serialize(), ct);
     }
 }

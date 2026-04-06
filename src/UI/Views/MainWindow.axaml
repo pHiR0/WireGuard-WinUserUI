@@ -49,6 +49,21 @@
             </StackPanel>
         </Border>
 
+        <!-- No permissions banner (connected but role = None) -->
+        <Border DockPanel.Dock="Top" Background="#2A1A3D" CornerRadius="4"
+                Padding="12,8" Margin="0,0,0,8"
+                IsVisible="{Binding HasNoPermissions}">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="🔒" FontSize="16" VerticalAlignment="Center"/>
+                <StackPanel>
+                    <TextBlock Foreground="#C084FC" FontWeight="SemiBold"
+                               Text="Sin permisos para gestionar túneles."/>
+                    <TextBlock Foreground="#A78BFA" FontSize="12"
+                               Text="Tu usuario no pertenece a ningún grupo de 'Wireguard UI'. Contacta con el administrador del sistema."/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
         <!-- Bottom status toolbar -->
         <Border DockPanel.Dock="Bottom" Background="#16213A"
                 Padding="12,5" Margin="-16,8,-16,-16">

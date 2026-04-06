@@ -24,14 +24,14 @@ public partial class MainWindowViewModel : ViewModelBase
     private const int ReconnectIntervalMs = 1000;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ServiceStatusColor), nameof(ServiceStatusText))]
+    [NotifyPropertyChangedFor(nameof(ServiceStatusColor), nameof(ServiceStatusText), nameof(HasNoPermissions))]
     private bool _isConnected;
 
     [ObservableProperty]
     private string _currentUser = string.Empty;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsOperator), nameof(IsAdvancedOperator), nameof(IsAdmin), nameof(CurrentRoleText))]
+    [NotifyPropertyChangedFor(nameof(IsOperator), nameof(IsAdvancedOperator), nameof(IsAdmin), nameof(CurrentRoleText), nameof(HasNoPermissions))]
     private UserRole _currentRole;
 
     [ObservableProperty]
@@ -62,6 +62,9 @@ public partial class MainWindowViewModel : ViewModelBase
     public bool IsOperator => CurrentRole >= UserRole.Operator;
     public bool IsAdvancedOperator => CurrentRole >= UserRole.AdvancedOperator;
     public bool IsAdmin => CurrentRole >= UserRole.Admin;
+
+    /// <summary>True when connected to the service but the user has no role assigned.</summary>
+    public bool HasNoPermissions => IsConnected && CurrentRole == UserRole.None;
 
     // Role display
     public string CurrentRoleText => CurrentRole switch
@@ -130,13 +133,29 @@ public partial class MainWindowViewModel : ViewModelBase
                 {
                     await _pipeClient.ConnectAsync(ct);
                     var userInfo = await _pipeClient.GetCurrentUserAsync(ct);
-                    var tunnels = await _pipeClient.ListTunnelsAsync(ct);
+
+                    // userInfo is null when service returns "Access denied" (role = None).
+                    // We still mark as connected so the UI can show the "no permissions" banner.
+                    var role = userInfo?.Role ?? UserRole.None;
+
+                    IReadOnlyList<TunnelInfo> tunnels = [];
+                    if (role > UserRole.None)
+                    {
+                        // Only fetch tunnels when the user has at least Viewer access.
+                        try { tunnels = await _pipeClient.ListTunnelsAsync(ct); }
+                        catch { /* ignore — stay connected but show empty list */ }
+                    }
+
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         if (userInfo is not null)
                         {
                             CurrentUser = userInfo.Username;
                             CurrentRole = userInfo.Role;
+                        }
+                        else
+                        {
+                            CurrentRole = UserRole.None;
                         }
                         IsConnected = true;
                         ErrorMessage = string.Empty;
@@ -145,8 +164,11 @@ public partial class MainWindowViewModel : ViewModelBase
                 }
                 else
                 {
-                    var tunnels = await _pipeClient.ListTunnelsAsync(ct);
-                    await Dispatcher.UIThread.InvokeAsync(() => SyncTunnelList(tunnels));
+                    if (CurrentRole > UserRole.None)
+                    {
+                        var tunnels = await _pipeClient.ListTunnelsAsync(ct);
+                        await Dispatcher.UIThread.InvokeAsync(() => SyncTunnelList(tunnels));
+                    }
                 }
             }
             catch (OperationCanceledException) { break; }

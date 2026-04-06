@@ -29,9 +29,9 @@ public sealed class RequestHandler
         _logger = logger;
     }
 
-    public async Task<IpcResponse> HandleAsync(IpcRequest request, string callingUser, CancellationToken ct)
+    public async Task<IpcResponse> HandleAsync(IpcRequest request, string callingUser, string? callingUserSid, CancellationToken ct)
     {
-        var role = await _roleStore.GetRoleAsync(callingUser, ct);
+        var role = await _roleStore.GetRoleAsync(callingUser, callingUserSid, ct);
 
         if (!_authService.IsAuthorized(role, request.Command))
         {

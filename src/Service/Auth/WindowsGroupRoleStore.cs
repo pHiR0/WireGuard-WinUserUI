@@ -35,13 +35,13 @@ public sealed class WindowsGroupRoleStore : IRoleStore
         _logger = logger;
     }
 
-    public Task<UserRole> GetRoleAsync(string username, CancellationToken ct = default)
+    public Task<UserRole> GetRoleAsync(string username, string? userSid = null, CancellationToken ct = default)
     {
-        var role = ResolveRole(username);
+        var role = ResolveRole(username, userSid);
         return Task.FromResult(role);
     }
 
-    private UserRole ResolveRole(string username)
+    private UserRole ResolveRole(string username, string? userSid)
     {
         // Strip domain prefix for local lookup: "DESKTOP-XXX\john" → "john"
         var localName = username.Contains('\\') ? username.Split('\\', 2)[1] : username;
@@ -51,56 +51,87 @@ public sealed class WindowsGroupRoleStore : IRoleStore
             using var ctx = new PrincipalContext(ContextType.Machine);
 
             // 1. Builtin\Administrators → Admin
-            if (IsInGroupBySid(ctx, localName, BuiltinAdminSid))
+            //    Try both username-based and SID-based lookups.
+            if (IsInBuiltinAdmins(ctx, localName, userSid))
             {
                 _logger.LogDebug("User '{User}' is a local admin → Admin role", username);
                 return UserRole.Admin;
             }
 
-            // 2. WireGuard UI - Administrator → Admin
-            if (IsInGroup(ctx, localName, GroupAdministrator))
-                return UserRole.Admin;
-
-            // 3. WireGuard UI - Operador avanzado → AdvancedOperator
-            if (IsInGroup(ctx, localName, GroupAdvancedOperator))
-                return UserRole.AdvancedOperator;
-
-            // 4. WireGuard UI - Operador → Operator
-            if (IsInGroup(ctx, localName, GroupOperator))
-                return UserRole.Operator;
-
-            // 5. WireGuard UI - Visualizador → Viewer
-            if (IsInGroup(ctx, localName, GroupViewer))
-                return UserRole.Viewer;
+            // 2-5. WireGuard UI groups — try username first, fall back to SID enumeration
+            //      (SID-based is required for domain accounts added to local groups).
+            foreach (var (groupName, role) in GroupRoleMap())
+            {
+                if (IsMemberOfLocalGroup(ctx, localName, userSid, groupName))
+                    return role;
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to check group membership for user '{User}'", username);
+            _logger.LogWarning(ex, "Failed to check group membership for user '{User}' (SID: {Sid})", username, userSid ?? "—");
         }
 
         return UserRole.None;
     }
 
-    private static bool IsInGroupBySid(PrincipalContext ctx, string username, string sid)
+    // ──────────────────────────────────────────
+    // Group membership helpers
+    // ──────────────────────────────────────────
+
+    /// <summary>
+    /// Checks Builtin\Administrators membership. Tries username lookup first; if the user
+    /// cannot be found in the local SAM (domain accounts), falls back to SID enumeration.
+    /// </summary>
+    private static bool IsInBuiltinAdmins(PrincipalContext ctx, string localName, string? userSid)
     {
         try
         {
-            using var group = GroupPrincipal.FindByIdentity(ctx, IdentityType.Sid, sid);
+            using var group = GroupPrincipal.FindByIdentity(ctx, IdentityType.Sid, BuiltinAdminSid);
             if (group is null) return false;
-            using var user  = UserPrincipal.FindByIdentity(ctx, IdentityType.SamAccountName, username);
-            return user is not null && user.IsMemberOf(group);
+            return IsMemberBySidOrName(group, localName, userSid);
         }
         catch { return false; }
     }
 
-    private static bool IsInGroup(PrincipalContext ctx, string username, string groupName)
+    /// <summary>
+    /// Checks membership of a local group by group name.
+    /// First tries a fast UserPrincipal lookup (works for local accounts).
+    /// If that fails (e.g. domain user not in local SAM), enumerates group members
+    /// and compares SIDs — which works for domain accounts added to local groups.
+    /// </summary>
+    private static bool IsMemberOfLocalGroup(PrincipalContext ctx, string localName, string? userSid, string groupName)
     {
         try
         {
             using var group = GroupPrincipal.FindByIdentity(ctx, groupName);
             if (group is null) return false;
-            using var user  = UserPrincipal.FindByIdentity(ctx, IdentityType.SamAccountName, username);
-            return user is not null && user.IsMemberOf(group);
+            return IsMemberBySidOrName(group, localName, userSid);
+        }
+        catch { return false; }
+    }
+
+    /// <summary>
+    /// Tries to determine membership using UserPrincipal.IsMemberOf first (fast path for
+    /// local accounts). Falls back to enumerating members and comparing SIDs (required for
+    /// domain accounts, UPN accounts, and other non-local users added to local groups).
+    /// </summary>
+    private static bool IsMemberBySidOrName(GroupPrincipal group, string localName, string? userSid)
+    {
+        // Fast path: try to find by local SAM name and use IsMemberOf
+        try
+        {
+            using var user = UserPrincipal.FindByIdentity(group.Context, IdentityType.SamAccountName, localName);
+            if (user is not null)
+                return user.IsMemberOf(group);
+        }
+        catch { /* local resolution failed — fall through to SID-based check */ }
+
+        // Fallback: SID-based enumeration (works for domain accounts)
+        if (string.IsNullOrEmpty(userSid)) return false;
+        try
+        {
+            using var members = group.GetMembers(recursive: true);
+            return members.Any(m => string.Equals(m.Sid?.Value, userSid, StringComparison.OrdinalIgnoreCase));
         }
         catch { return false; }
     }
