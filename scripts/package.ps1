@@ -105,5 +105,74 @@ else
     Write-Host "  (instalador omitido con -SkipInstaller)"
 }
 
+# ---------------------------------------------------------------------------
+# 4. Generar paquete Chocolatey (.nupkg)
+#    Requiere: choco (Chocolatey) instalado y disponible en PATH
+#    Omitido si no se generó el MSI (SkipInstaller) o si no se encuentra choco.
+# ---------------------------------------------------------------------------
+$msiArtifact = Join-Path $ArtifactsDir "WireGuard-WinUserUI-$Version-x64.msi"
+$ChocoDir    = Join-Path $Root "packaging\wireguard-manager"
+$NuspecPath  = Join-Path $ChocoDir "wireguard-manager.nuspec"
+$InstallScript = Join-Path $ChocoDir "tools\chocolateyinstall.ps1"
+$ChocoOut    = Join-Path $ArtifactsDir "chocolatey"
+
+if (-not $SkipInstaller -and (Test-Path $msiArtifact))
+{
+    Write-Host "`n-- Generando paquete Chocolatey..." -ForegroundColor Yellow
+
+    $chocoCmd = Get-Command choco -ErrorAction SilentlyContinue
+    if ($null -eq $chocoCmd)
+    {
+        Write-Warning "  'choco' no encontrado en PATH. Omitiendo generación del paquete Chocolatey."
+        Write-Warning "  Instale Chocolatey (https://chocolatey.org/install) y vuelva a ejecutar."
+    }
+    else
+    {
+        # 4a. Calcular SHA256 del MSI recién generado
+        $hash = (Get-FileHash -Path $msiArtifact -Algorithm SHA256).Hash.ToLower()
+        Write-Host "  SHA256 del MSI: $hash"
+
+        # 4b. Actualizar checksum64 en chocolateyinstall.ps1
+        $installContent = Get-Content $InstallScript -Raw
+        $installContent = $installContent -replace "checksum64\s*=\s*'[0-9a-fA-F]+'", "checksum64    = '$hash'"
+        Set-Content -Path $InstallScript -Value $installContent -Encoding UTF8 -NoNewline
+        Write-Host "  checksum64 actualizado en chocolateyinstall.ps1"
+
+        # 4c. Actualizar <version> en el .nuspec con la versión actual del build
+        [xml]$nuspec = Get-Content $NuspecPath
+        $nuspec.package.metadata.version = $Version
+        $nuspec.Save($NuspecPath)
+        Write-Host "  Versión $Version actualizada en wireguard-manager.nuspec"
+
+        # 4d. Ejecutar choco pack
+        New-Item -ItemType Directory -Force -Path $ChocoOut | Out-Null
+        Push-Location $ChocoDir
+        try
+        {
+            choco pack --out "$ChocoOut"
+            if ($LASTEXITCODE -ne 0) { throw "choco pack falló con código $LASTEXITCODE" }
+        }
+        finally { Pop-Location }
+
+        $nupkg = Get-ChildItem $ChocoOut -Filter "*.nupkg" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+        if ($nupkg)
+        {
+            Write-Host "  .nupkg generado: $($nupkg.FullName)" -ForegroundColor Green
+        }
+        else
+        {
+            Write-Warning "  No se encontró ningún .nupkg en $ChocoOut"
+        }
+    }
+}
+elseif ($SkipInstaller)
+{
+    Write-Host "  (paquete Chocolatey omitido porque se usó -SkipInstaller)"
+}
+else
+{
+    Write-Host "  (paquete Chocolatey omitido: no existe el MSI en $msiArtifact)"
+}
+
 Write-Host "`n=== Empaquetado completado ===" -ForegroundColor Cyan
 
