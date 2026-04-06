@@ -8,9 +8,9 @@
 if ([string]::IsNullOrWhiteSpace($Version))
 {
     $now = Get-Date
-    # Normalize version to avoid leading zeros (e.g., "005" -> "5")
-    # NuGet/Chocolatey strip leading zeros, so we do it upfront for consistency
-    $Version = "{0}.{1}.{2}.{3}" -f $now.ToString("yy"), $now.Month, $now.Day, ([int]($now.ToString("Hmm")))
+    # Build = minuto del día (1 en 00:00, 1440 en 23:59)
+    $minuteOfDay = $now.Hour * 60 + $now.Minute + 1
+    $Version = "{0}.{1}.{2}.{3}" -f $now.ToString("yy"), $now.Month, $now.Day, $minuteOfDay
 }
 
 $ErrorActionPreference = "Stop"
