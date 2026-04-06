@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.DirectoryServices.AccountManagement;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -197,28 +199,89 @@ public sealed class WindowsGroupRoleStore : IFastRoleStore
 
     /// <summary>
     /// Tries to determine membership using UserPrincipal.IsMemberOf first (fast path for
-    /// local accounts). Falls back to enumerating members and comparing SIDs (required for
-    /// domain accounts, UPN accounts, and other non-local users added to local groups).
+    /// local accounts). Falls back to Win32 NetLocalGroupGetMembers which reads raw SIDs
+    /// directly from the local SAM without requiring domain controller access — the same
+    /// API used by Get-LocalGroupMember. This reliably handles domain users in local groups.
     /// </summary>
     private static bool IsMemberBySidOrName(GroupPrincipal group, string localName, string? userSid)
     {
-        // Fast path: try to find by local SAM name and use IsMemberOf
+        // 1. Win32 direct-SID read from local SAM (no DC needed, same as Get-LocalGroupMember).
+        //    Most reliable method for domain users. If it succeeds its result is authoritative.
+        if (!string.IsNullOrEmpty(userSid) && group.Name is not null)
+        {
+            bool? win32Result = null;
+            try { win32Result = IsDirectMemberBySidWin32(group.Name, userSid); }
+            catch { /* P/Invoke unavailable — fall through */ }
+            if (win32Result.HasValue) return win32Result.Value;
+        }
+
+        // 2. DirectoryServices: find local SAM user by name + IsMemberOf (fast for local accounts).
         try
         {
             using var user = UserPrincipal.FindByIdentity(group.Context, IdentityType.SamAccountName, localName);
             if (user is not null)
                 return user.IsMemberOf(group);
         }
-        catch { /* local resolution failed — fall through to SID-based check */ }
+        catch { /* local resolution failed — fall through */ }
 
-        // Fallback: SID-based enumeration (works for domain accounts)
+        // 3. DirectoryServices member enumeration (last resort; may need DC for recursive).
         if (string.IsNullOrEmpty(userSid)) return false;
         try
         {
-            using var members = group.GetMembers(recursive: true);
+            using var members = group.GetMembers(recursive: false);
             return members.Any(m => string.Equals(m.Sid?.Value, userSid, StringComparison.OrdinalIgnoreCase));
         }
         catch { return false; }
+    }
+
+    // ──────────────────────────────────────────
+    // Win32 helpers — NetLocalGroupGetMembers
+    // ──────────────────────────────────────────
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct LOCALGROUP_MEMBERS_INFO_0 { public IntPtr lgrmi0_sid; }
+
+    [DllImport("Netapi32.dll", CharSet = CharSet.Unicode)]
+    private static extern int NetLocalGroupGetMembers(
+        string? serverName, string localGroupName, int level,
+        out IntPtr bufPtr, int prefMaxLen, out int entriesRead,
+        out int totalEntries, IntPtr resumeHandle);
+
+    [DllImport("Netapi32.dll")]
+    private static extern int NetApiBufferFree(IntPtr buffer);
+
+    /// <summary>
+    /// Checks whether a user (identified by SID string) is a direct member of a local group.
+    /// Uses NetLocalGroupGetMembers Win32 API — reads raw SIDs from the local SAM with no
+    /// domain controller access required. This is the same API used by Get-LocalGroupMember.
+    /// </summary>
+    private static bool IsDirectMemberBySidWin32(string groupName, string userSid)
+    {
+        const int NERR_Success = 0;
+        var rc = NetLocalGroupGetMembers(null, groupName, 0, out var buf, -1,
+                                         out var entriesRead, out _, IntPtr.Zero);
+        if (rc != NERR_Success || buf == IntPtr.Zero) return false;
+        try
+        {
+            var size = Marshal.SizeOf<LOCALGROUP_MEMBERS_INFO_0>();
+            for (var i = 0; i < entriesRead; i++)
+            {
+                var entry = Marshal.PtrToStructure<LOCALGROUP_MEMBERS_INFO_0>(IntPtr.Add(buf, i * size));
+                if (entry.lgrmi0_sid == IntPtr.Zero) continue;
+                try
+                {
+                    var sid = new SecurityIdentifier(entry.lgrmi0_sid);
+                    if (string.Equals(sid.Value, userSid, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+                catch { /* unresolvable SID — skip */ }
+            }
+            return false;
+        }
+        finally
+        {
+            NetApiBufferFree(buf);
+        }
     }
 
     // ──────────────────────────────────────────
