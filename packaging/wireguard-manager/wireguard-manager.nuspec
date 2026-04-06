@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>wireguard-manager</id>
-    <version>26.4.6.2326</version>
+    <version>26.4.6.2349</version>
     <title>WireGuard Manager</title>
     <authors>pHiR0</authors>
     <owners>pHiR0</owners>
