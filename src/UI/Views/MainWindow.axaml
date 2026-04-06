@@ -110,7 +110,7 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="&#x1F5A7;" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#xE701;" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="Túneles" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -297,7 +297,7 @@
                      IsVisible="{Binding IsAdmin}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="&#x1F4CB;" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="Auditoría" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -375,7 +375,7 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="&#x2699;" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="Configuración" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -482,7 +482,7 @@
             <TabItem x:DataType="vm:MainWindowViewModel">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="&#x2139;" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="Acerca de" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
