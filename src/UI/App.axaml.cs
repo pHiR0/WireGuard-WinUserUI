@@ -5,6 +5,7 @@ using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using System;
 using System.Linq;
 using WireGuard.UI.ViewModels;
@@ -120,6 +121,19 @@ public partial class App : Application
         _mainWindow.Activate();
         // Refresh public IP when restoring from tray (rate-limited — won't flood on rapid show/hide)
         _vm?.RequestPublicIpRefresh();
+    }
+
+    /// <summary>
+    /// Called from the single-instance listener thread when another process signals us to show.
+    /// Marshals the call to the UI thread.
+    /// </summary>
+    public static void RequestShowMainWindow()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (Current is App app)
+                app.ShowMainWindow();
+        });
     }
 
     private void DisableAvaloniaDataAnnotationValidation()
