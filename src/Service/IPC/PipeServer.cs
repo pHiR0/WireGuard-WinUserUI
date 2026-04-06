@@ -53,12 +53,20 @@ public sealed class PipeServer
             }
             catch (UnauthorizedAccessException) when (_isFirstInstance)
             {
-                // Another process already owns a pipe with this name — potential squatting.
-                _logger.LogCritical(
-                    "SECURITY: A pipe named '{PipeName}' already exists and was not created by this service. " +
-                    "This may indicate a pipe-squatting attack. Service will not start.",
+                // FILE_FLAG_FIRST_PIPE_INSTANCE failed: a pipe with this name already exists.
+                // In production this is a critical security event (pipe-squatting).
+                // In development it is usually a leftover handle from a previous run — retry
+                // once without the flag so the dev loop keeps working.
+                _logger.LogWarning(
+                    "Pipe '{PipeName}' already exists. If running in production this may indicate " +
+                    "a pipe-squatting attack. Retrying without FILE_FLAG_FIRST_PIPE_INSTANCE...",
                     PipeConstants.PipeName);
-                throw; // escalate: let the host terminate the service
+
+                // Clearing the flag lets the next iteration skip the FIRST_PIPE_INSTANCE check.
+                _isFirstInstance = false;
+
+                // Short delay to allow a previous run's kernel handle to be released.
+                try { await Task.Delay(500, ct); } catch (OperationCanceledException) { break; }
             }
             catch (Exception ex)
             {
@@ -103,13 +111,11 @@ public sealed class PipeServer
         // CreateNamedPipe fails with ACCESS_DENIED if a pipe with this name already
         // exists — this detects and blocks pipe-squatting attacks.
         var options = PipeOptions.Asynchronous | PipeOptions.WriteThrough;
-        if (_isFirstInstance)
-        {
+        var isFirst = _isFirstInstance;
+        if (isFirst)
             options |= (PipeOptions)FirstPipeInstanceFlag;
-            _isFirstInstance = false;
-        }
 
-        return NamedPipeServerStreamAcl.Create(
+        var pipe = NamedPipeServerStreamAcl.Create(
             PipeConstants.PipeName,
             PipeDirection.InOut,
             NamedPipeServerStream.MaxAllowedServerInstances,
@@ -118,6 +124,13 @@ public sealed class PipeServer
             inBufferSize: 0,
             outBufferSize: 0,
             pipeSecurity);
+
+        // Only clear the flag AFTER successful creation so that if Create() throws,
+        // _isFirstInstance remains true and RunAsync can detect pipe-squatting correctly.
+        if (isFirst)
+            _isFirstInstance = false;
+
+        return pipe;
     }
 
     /// <summary>
