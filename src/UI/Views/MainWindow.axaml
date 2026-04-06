@@ -369,21 +369,6 @@
 
                         <TextBlock Text="Configuración de la aplicación" FontSize="16" FontWeight="SemiBold"/>
 
-                        <!-- Intervalo de actualización -->
-                        <Border Background="#252B3A" CornerRadius="8" Padding="16">
-                            <StackPanel Spacing="8">
-                                <TextBlock Text="Actualización automática" FontWeight="SemiBold" FontSize="14"/>
-                                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                                    <TextBlock Text="Intervalo (segundos):" FontSize="13" VerticalAlignment="Center"/>
-                                    <NumericUpDown Value="{Binding RefreshIntervalSeconds}"
-                                                  Minimum="1" Maximum="300" Increment="1"
-                                                  Width="100"/>
-                                </StackPanel>
-                                <TextBlock Text="Define cada cuántos segundos se actualiza la lista de túneles."
-                                           FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </Border>
-
                         <!-- Notificaciones -->
                         <Border Background="#252B3A" CornerRadius="8" Padding="16">
                             <StackPanel Spacing="8">

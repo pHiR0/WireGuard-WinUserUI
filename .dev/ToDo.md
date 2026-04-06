@@ -168,3 +168,15 @@ Al final cuando termines y no haya ninguna nueva tarea apuntada en el ToDo.md, d
 # NOTA: para limpiar la historia antigua (commits previos donde existían) antes de hacer el repo público, ejecutar:
 # git filter-repo --path docs/ToDo.md --path docs/ChuletasPrompts.md --invert-paths
 # (requiere: pip install git-filter-repo)
+
+- Agrega al scrip package.ps1 que cuando se cree un nuevo instalador genere tambien el paquete de chocolatey (.nupgk):
+> Debe actualizar la version en el .nuspec y actualizar el hash 256 en el chocolateyinstall.ps1 en base al instalador generado de la misma version. No hace falta actualizar la version porque la he cambiado para usar la variable $env:ChocolateyPackageVersion
+- La app no quiero que se puede abrir mas de una vez por cada usuario, me sucede que si ya la tengo abierta, ya sea minimizada, normal o en el tray, se vuelve a abrir otra sesion de la app. En estos casos si ya hay una app abierta en el mismo usuario, lo que tiene que hacer es "mostrar" la que ya está corriendo.
+- Tambien en un equipo corporativo, que usas cuentas de usuario del Active Directory, he añadido el usuario con el que inicio sesion a un grupo de "Wireguard UI" y sigue sin mostrarse nada en la app solo se abre la ventana, se muestra la tab de tunnels, pero sin conetenido de tuneles (bien) la de , la de configuración y acerca de se muestran correctamente.
+> Adicionalmente en la botom bar aparece el boliche rojo, y no aparece ni la IP pública.
+> Entiendo que es porque auqneu el usuario esté metido en el grupo "Wireguard UI" no lo detecta bien, y no detecta el rol del mismo. Para estos casos quiero que muestre un mensaje claro de que no tiene permisos para gestionar los túneles.
+- En la configuracion, el setting "Intervalo (segundos)" quítalo y ese valor es hardcodeado a 5 segundos
+- Tambien en la configuración en la seccion de resolucion de "IP Pública" quita los servicios apu.ipify.org y checkip.amazonaws.com ya que no funcionan bien.
+- El mensaje que aparece cuando no tienes Wireguard instalado, es muy largo horzontalmente y no se ve completo, convertelo en un mensaje de 2 lineas.
+- Los iconos que compañan a las pesstañas, son muy pequeños, hazlo mas grandes mas acordes al tamaño de la fuente del nombre de la TAB. En los botones de los túneles tambien no se ven bien, creo que mejor puedes elegir otro tema de iconos y usar otro pack de iconos.
+- La ventana de Editar/crear túnel no es lo suficientemente alta de forma predeterminada como para que se vea el badge ,que está debajo del area de texto de configuracion, que indica si la configuración es válida o no. Haz que se abra inicialmente viendose ese badge, y que nose pueda reducir la ventana mas alla del badge, que siempre se vea.

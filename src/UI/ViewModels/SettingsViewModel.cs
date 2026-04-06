@@ -27,9 +27,6 @@ public partial class SettingsViewModel : ViewModelBase
     private bool _isLoaded;
 
     [ObservableProperty]
-    private int _refreshIntervalSeconds = 5;
-
-    [ObservableProperty]
     private bool _enableNotifications = true;
 
     [ObservableProperty]
@@ -92,7 +89,6 @@ public partial class SettingsViewModel : ViewModelBase
             Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
             var data = new SettingsData
             {
-                RefreshIntervalSeconds = RefreshIntervalSeconds,
                 EnableNotifications = EnableNotifications,
                 MinimizeToTray = MinimizeToTray,
                 StartMinimized = StartMinimized,
@@ -122,7 +118,6 @@ public partial class SettingsViewModel : ViewModelBase
 
         if (data is not null)
         {
-            RefreshIntervalSeconds = Math.Clamp(data.RefreshIntervalSeconds, 1, 300);
             EnableNotifications = data.EnableNotifications;
             MinimizeToTray = data.MinimizeToTray;
             StartMinimized = data.StartMinimized;
@@ -180,7 +175,6 @@ public partial class SettingsViewModel : ViewModelBase
 
     private sealed class SettingsData
     {
-        public int RefreshIntervalSeconds { get; set; } = 5;
         public bool EnableNotifications { get; set; } = true;
         public bool MinimizeToTray { get; set; } = true;
         public bool StartMinimized { get; set; }

@@ -153,7 +153,7 @@ public partial class MainWindowViewModel : ViewModelBase
             catch { /* conexión no disponible, reintentar */ }
 
             var delay = IsConnected
-                ? (Settings?.RefreshIntervalSeconds ?? 5) * 1000
+                ? RefreshIntervalMs
                 : ReconnectIntervalMs;
             try { await Task.Delay(delay, ct); }
             catch (OperationCanceledException) { break; }
