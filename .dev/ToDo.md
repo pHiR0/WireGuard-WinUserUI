@@ -200,3 +200,5 @@ Al final cuando termines y no haya ninguna nueva tarea apuntada en el ToDo.md, d
 > Añade esto a la documentación README.md
 - He editado un tunnel, y cuando le he dado a guardar los cambios me ha dado error porque dice que el tunnel ya existe, pero de buenas a primeras se eliminó y entonces si me dejó guardar los cambios.
 > Supongo que cuando editamos deberemos agregar algun tiempo de espera o comprobar que el tunnel no existe para commitear los cambios al mismo.
+- Cuando hago scroll en "Acerca de". no baja lo suficiente para mostar todo el cuadro de la licencia.
+- No sé si ya estaba así, pero quiero que el "Servicio Principal" por defecto para la resolución de IP Pública sea "DNS (OpenDNS)"
