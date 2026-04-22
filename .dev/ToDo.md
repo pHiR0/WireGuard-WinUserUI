@@ -191,3 +191,9 @@ Al final cuando termines y no haya ninguna nueva tarea apuntada en el ToDo.md, d
 
 + Migra los iconos de los tabs tambien a Segoe MDL2 Assets
 # Implementado: los 4 tabs migrados de emojis Unicode a Segoe MDL2 Assets — Túneles E701 (WiFi/network), Auditoría E7BA (History/registros), Configuración E713 (Settings gear), Acerca de E946 (Info). FontFamily="Segoe MDL2 Assets" FontSize=16 en cada TextBlock de icono.
+
+- En la interfaz, para un usuario con el Rol Operador, no debería ni aparecer el botón exportar ni el de eliminar.
+- Tambien vamos a agregar un setting mediante alguna clave de registro, para que aquellos usuarios que no tengan asignado un rol, o sea no estén en ninguno de los grupos de roles, sean tratados como un usuario con rol operador. Esto es si esa clave está presente y habilitada, cualquier usuario , que NO esté en un grupo de rol de Wireguard Manager , se le asignará el rol de operador, pero sin necesidad de meterlo en el grupo.
+> Añade esto a la documentación README.md
+- He editado un tunnel, y cuando le he dado a guardar los cambios me ha dado error porque dice que el tunnel ya existe, pero de buenas a primeras se eliminó y entonces si me dejó guardar los cambios.
+> Supongo que cuando editamos deberemos agregar algun tiempo de espera o comprobar que el tunnel no existe para commitear los cambios al mismo.
