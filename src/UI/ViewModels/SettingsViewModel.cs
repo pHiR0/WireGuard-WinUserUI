@@ -92,7 +92,7 @@ public partial class SettingsViewModel : ViewModelBase
                 EnableNotifications = EnableNotifications,
                 MinimizeToTray = MinimizeToTray,
                 StartMinimized = StartMinimized,
-                PrimaryProviderId = SelectedPrimaryProvider?.Id ?? "ipinfo",
+                PrimaryProviderId = SelectedPrimaryProvider?.Id ?? "dns",
                 EnabledFallbackIds = PublicIpProviders
                     .Where(p => p != SelectedPrimaryProvider && p.IsEnabled)
                     .Select(p => p.Id)
@@ -124,7 +124,7 @@ public partial class SettingsViewModel : ViewModelBase
         }
 
         // Build provider VMs from the static provider list
-        var primaryId = data?.PrimaryProviderId ?? "ipinfo";
+        var primaryId = data?.PrimaryProviderId ?? "dns";
         var enabledFallbacks = data?.EnabledFallbackIds?.ToHashSet()
             ?? PublicIpService.AllProviders.Select(p => p.Id).ToHashSet();
 
@@ -178,7 +178,7 @@ public partial class SettingsViewModel : ViewModelBase
         public bool EnableNotifications { get; set; } = true;
         public bool MinimizeToTray { get; set; } = true;
         public bool StartMinimized { get; set; }
-        public string PrimaryProviderId { get; set; } = "ipinfo";
+        public string PrimaryProviderId { get; set; } = "dns";
         public List<string> EnabledFallbackIds { get; set; } = [];
     }
 }
