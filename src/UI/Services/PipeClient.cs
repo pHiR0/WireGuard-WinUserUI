@@ -247,6 +247,41 @@ public sealed class PipeClient : IPipeClient
         return response.GetData<AuditPage>() ?? new AuditPage { Entries = [], TotalCount = 0, Page = 1, PageSize = 50 };
     }
 
+    // --- Phase 3: Global settings ---
+
+    public async Task<bool> GetAllUsersDefaultOperatorAsync(CancellationToken ct = default)
+    {
+        var request = new IpcRequest
+        {
+            Command = IpcCommand.GetGlobalSettings,
+            RequestId = Guid.NewGuid().ToString("N"),
+        };
+        var response = await SendAsync(request, ct);
+        if (!response.Success)
+            return false;
+
+        // Response data is { allUsersDefaultOperator: bool }
+        try
+        {
+            var data = response.GetData<System.Text.Json.JsonElement?>();
+            if (data?.TryGetProperty("allUsersDefaultOperator", out var prop) == true)
+                return prop.GetBoolean();
+        }
+        catch { /* ignore */ }
+        return false;
+    }
+
+    public async Task SetAllUsersDefaultOperatorAsync(bool enabled, CancellationToken ct = default)
+    {
+        var request = new IpcRequest
+        {
+            Command = IpcCommand.SetGlobalSettings,
+            BoolValue = enabled,
+            RequestId = Guid.NewGuid().ToString("N"),
+        };
+        await SendExpectOkAsync(request, ct);
+    }
+
     public async ValueTask DisposeAsync()
     {
         _disposed = true;

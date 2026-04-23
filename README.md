@@ -74,6 +74,17 @@ Los permisos se gestionan a través de **grupos de Windows locales** que el serv
 
 Para añadir un usuario a un rol, agrega su cuenta al grupo correspondiente mediante *Administración de equipos* (`compmgmt.msc`).
 
+### Todos los usuarios como Operador por defecto
+
+Existe una opción global que permite que **cualquier usuario autenticado** que no pertenezca a ningún grupo de roles sea tratado automáticamente como **Operador** (puede conectar/desconectar túneles).
+
+- **Por defecto: desactivado.**
+- Se activa desde la pestaña *Configuración* de la UI (visible solo para usuarios con rol Administrador).
+- Es una **configuración global** que afecta a todos los equipos donde está instalado el servicio.
+- Internamente se almacena en el registro de Windows:
+  `HKLM\SOFTWARE\WireGuard-WinUserUI\AllUsersDefaultOperator` (DWORD: 0 = desactivado, 1 = activado)
+- Los usuarios que tengan un rol explícito asignado (mediante grupo de Windows) conservan siempre su rol asignado, independientemente de esta opción.
+
 ---
 
 ## Instalación

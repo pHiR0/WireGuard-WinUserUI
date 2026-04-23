@@ -31,6 +31,7 @@ public sealed class WindowsGroupRoleStore : IFastRoleStore
     private  const string BuiltinAdminSid         = "S-1-5-32-544";
 
     private readonly ILogger<WindowsGroupRoleStore> _logger;
+    private readonly GlobalSettingsStore _globalSettings;
 
     /// <summary>
     /// Lazy map of local group SID → UserRole, resolved once at startup.
@@ -38,9 +39,10 @@ public sealed class WindowsGroupRoleStore : IFastRoleStore
     /// </summary>
     private readonly Lazy<IReadOnlyDictionary<string, UserRole>> _groupSidToRole;
 
-    public WindowsGroupRoleStore(ILogger<WindowsGroupRoleStore> logger)
+    public WindowsGroupRoleStore(ILogger<WindowsGroupRoleStore> logger, GlobalSettingsStore globalSettings)
     {
         _logger = logger;
+        _globalSettings = globalSettings;
         _groupSidToRole = new Lazy<IReadOnlyDictionary<string, UserRole>>(
             ResolveGroupSids, LazyThreadSafetyMode.PublicationOnly);
         // Pre-warm: resolve group SIDs in the background so the first IPC call is fast.
@@ -50,6 +52,11 @@ public sealed class WindowsGroupRoleStore : IFastRoleStore
     public Task<UserRole> GetRoleAsync(string username, string? userSid = null, CancellationToken ct = default)
     {
         var role = ResolveRole(username, userSid);
+        if (role == UserRole.None && _globalSettings.GetAllUsersDefaultOperator())
+        {
+            _logger.LogDebug("User '{User}' has no explicit role — AllUsersDefaultOperator is on, assigning Operator", username);
+            role = UserRole.Operator;
+        }
         return Task.FromResult(role);
     }
 
@@ -72,6 +79,13 @@ public sealed class WindowsGroupRoleStore : IFastRoleStore
         else
         {
             _logger.LogDebug("User '{User}' resolved to role {Role} via token groups (fast path)", username, role);
+        }
+
+        // Apply AllUsersDefaultOperator if still no role
+        if (role == UserRole.None && _globalSettings.GetAllUsersDefaultOperator())
+        {
+            _logger.LogDebug("User '{User}' has no explicit role — AllUsersDefaultOperator is on, assigning Operator", username);
+            role = UserRole.Operator;
         }
 
         return Task.FromResult(role);

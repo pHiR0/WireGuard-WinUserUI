@@ -25,6 +25,9 @@ public sealed class IpcRequest
     // Phase 2 — Tunnel auto-start
     public bool? AutoStart { get; init; }
 
+    // Phase 3 — Generic bool value for global settings commands
+    public bool? BoolValue { get; init; }
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

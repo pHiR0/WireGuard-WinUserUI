@@ -13,6 +13,7 @@ public sealed class RequestHandler
     private readonly IRoleStore _roleStore;
     private readonly IAuthorizationService _authService;
     private readonly IAuditLogger _auditLogger;
+    private readonly GlobalSettingsStore _globalSettings;
     private readonly ILogger<RequestHandler> _logger;
 
     public RequestHandler(
@@ -20,12 +21,14 @@ public sealed class RequestHandler
         IRoleStore roleStore,
         IAuthorizationService authService,
         IAuditLogger auditLogger,
+        GlobalSettingsStore globalSettings,
         ILogger<RequestHandler> logger)
     {
         _tunnelManager = tunnelManager;
         _roleStore = roleStore;
         _authService = authService;
         _auditLogger = auditLogger;
+        _globalSettings = globalSettings;
         _logger = logger;
     }
 
@@ -220,6 +223,20 @@ public sealed class RequestHandler
                 var auditQuery = request.AuditQuery ?? new AuditQuery();
                 var page = await _auditLogger.QueryAsync(auditQuery, ct);
                 return IpcResponse.Ok(page, request.RequestId);
+
+            // --- Phase 3: Global settings (Admin only) ---
+
+            case IpcCommand.GetGlobalSettings:
+                return IpcResponse.Ok(new
+                {
+                    allUsersDefaultOperator = _globalSettings.GetAllUsersDefaultOperator()
+                }, request.RequestId);
+
+            case IpcCommand.SetGlobalSettings:
+                if (request.BoolValue is null)
+                    return IpcResponse.Fail("BoolValue is required", request.RequestId);
+                _globalSettings.SetAllUsersDefaultOperator(request.BoolValue.Value);
+                return IpcResponse.Ok(requestId: request.RequestId);
 
             default:
                 return IpcResponse.Fail($"Unknown command: {request.Command}", request.RequestId);

@@ -34,4 +34,8 @@ public interface IPipeClient : IAsyncDisposable
 
     // Phase 2 — Audit
     Task<AuditPage> GetAuditLogAsync(AuditQuery? query = null, CancellationToken ct = default);
+
+    // Phase 3 — Global settings (Admin only)
+    Task<bool> GetAllUsersDefaultOperatorAsync(CancellationToken ct = default);
+    Task SetAllUsersDefaultOperatorAsync(bool enabled, CancellationToken ct = default);
 }

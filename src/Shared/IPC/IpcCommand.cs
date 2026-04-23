@@ -25,4 +25,8 @@ public enum IpcCommand
 
     // Phase 2 — Audit
     GetAuditLog,
+
+    // Phase 3 — Global settings (Admin only)
+    GetGlobalSettings,
+    SetGlobalSettings,
 }

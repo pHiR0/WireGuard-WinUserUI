@@ -24,6 +24,7 @@ public class RequestHandlerTests
             _roleStoreMock.Object,
             authService,
             _auditLoggerMock.Object,
+            new GlobalSettingsStore(),
             Mock.Of<ILogger<RequestHandler>>());
     }
 

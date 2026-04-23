@@ -385,7 +385,7 @@
             </TabItem>
 
             <!-- ==================== TAB: Configuración ==================== -->
-            <TabItem>
+            <TabItem x:DataType="vm:MainWindowViewModel">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center"/>
@@ -393,11 +393,13 @@
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer>
-                    <StackPanel Spacing="16" Margin="0,8"
-                                DataContext="{Binding Settings}"
-                                x:DataType="vm:SettingsViewModel">
+                    <StackPanel Spacing="16" Margin="0,8">
 
                         <TextBlock Text="Configuración de la aplicación" FontSize="16" FontWeight="SemiBold"/>
+
+                        <!-- *** Sección de usuario (DataContext = SettingsViewModel) *** -->
+                        <StackPanel Spacing="16" DataContext="{Binding Settings}"
+                                    x:DataType="vm:SettingsViewModel">
 
                         <!-- Notificaciones -->
                         <Border Background="#252B3A" CornerRadius="8" Padding="16">
@@ -484,6 +486,37 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        </StackPanel>
+                        <!-- *** Fin sección usuario *** -->
+
+                        <!-- *** Sección Administrador: configuración global (solo Admin) *** -->
+                        <Border IsVisible="{Binding IsAdmin}"
+                                Background="#1A2840" CornerRadius="8" Padding="16"
+                                BorderBrush="#2563EB" BorderThickness="1">
+                            <StackPanel Spacing="12">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets" FontSize="14"
+                                               Foreground="#60A5FA" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Configuración global (Administrador)"
+                                               FontWeight="SemiBold" FontSize="14" Foreground="#60A5FA"/>
+                                </StackPanel>
+                                <TextBlock Text="&#x26A0; Esta sección afecta a TODOS los equipos y usuarios. Los cambios se aplican inmediatamente."
+                                           FontSize="11" Foreground="#F59E0B" TextWrapping="Wrap"/>
+
+                                <Border Background="#1E2D45" CornerRadius="6" Padding="12">
+                                    <StackPanel Spacing="6">
+                                        <ToggleSwitch IsChecked="{Binding AllUsersDefaultOperator}"
+                                                      OnContent="Activado"
+                                                      OffContent="Desactivado"/>
+                                        <TextBlock Text="Todos los usuarios como Operador por defecto"
+                                                   FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#94A3B8"
+                                                   Text="Cuando está activado, cualquier usuario autenticado que NO pertenezca a ningún grupo de roles de WireGuard Manager será tratado automáticamente como Operador. Los usuarios con rol explícito mantienen su rol asignado."/>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                         </Border>
 

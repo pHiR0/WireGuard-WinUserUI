@@ -15,6 +15,7 @@ builder.Services.AddWindowsService(options =>
 
 builder.Services.AddSingleton<ITunnelManager, TunnelManager>();
 builder.Services.AddSingleton<IRoleStore, WindowsGroupRoleStore>();
+builder.Services.AddSingleton<GlobalSettingsStore>();
 builder.Services.AddSingleton<WindowsGroupProvisioner>();
 builder.Services.AddSingleton<IAuthorizationService, AuthorizationService>();
 builder.Services.AddSingleton<IAuditLogger, JsonAuditLogger>();

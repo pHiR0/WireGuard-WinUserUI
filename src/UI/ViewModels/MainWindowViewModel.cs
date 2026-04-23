@@ -50,6 +50,13 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private string? _lastExportedTunnelName;
 
+    /// <summary>When true, users without any assigned role are treated as Operators (global setting).</summary>
+    [ObservableProperty]
+    private bool _allUsersDefaultOperator;
+
+    /// <summary>Flag to avoid writing the global setting back to the service during the initial load.</summary>
+    private bool _globalSettingsLoaded;
+
     [ObservableProperty]
     private string _publicIp = "—";
 
@@ -150,6 +157,14 @@ public partial class MainWindowViewModel : ViewModelBase
                         catch { /* ignore — stay connected but show empty list */ }
                     }
 
+                    // Load global settings (Admin only; non-admins get false silently)
+                    bool allUsersDefaultOperator = false;
+                    if (role >= UserRole.Admin)
+                    {
+                        try { allUsersDefaultOperator = await _pipeClient.GetAllUsersDefaultOperatorAsync(ct); }
+                        catch { /* ignore */ }
+                    }
+
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         if (userInfo is not null)
@@ -165,6 +180,11 @@ public partial class MainWindowViewModel : ViewModelBase
                         IsLoadingTunnels = false;
                         ErrorMessage = string.Empty;
                         SyncTunnelList(tunnels);
+
+                        // Set global settings without triggering save-back to service
+                        _globalSettingsLoaded = false;
+                        AllUsersDefaultOperator = allUsersDefaultOperator;
+                        _globalSettingsLoaded = true;
                     });
                 }
                 else
@@ -187,8 +207,17 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private void SyncTunnelList(IReadOnlyList<TunnelInfo> infos)
+    partial void OnAllUsersDefaultOperatorChanged(bool value)
     {
+        if (!_globalSettingsLoaded || !IsAdmin) return;
+        _ = Task.Run(async () =>
+        {
+            try { await _pipeClient.SetAllUsersDefaultOperatorAsync(value); }
+            catch { /* ignore — service may be unreachable */ }
+        });
+    }
+
+    private void SyncTunnelList(IReadOnlyList<TunnelInfo> infos)    {
         // Must be called on UI thread
         var byName = Tunnels.ToDictionary(t => t.Name);
         var newNames = infos.Select(i => i.Name).ToHashSet();
