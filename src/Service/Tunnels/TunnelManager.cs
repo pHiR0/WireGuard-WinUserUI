@@ -195,6 +195,11 @@ public sealed partial class TunnelManager : ITunnelManager
         try { await RunWireGuardAsync($"/uninstalltunnelservice \"{name}\"", ct); }
         catch { /* may not exist yet */ }
 
+        // Wait for the SCM to fully remove the service entry before re-installing.
+        // Without this delay wireguard.exe /installtunnelservice may fail with
+        // "already exists" if the SCM hasn't flushed the old entry yet.
+        await WaitForServiceRemovedAsync(serviceName, ct);
+
         var confPath = GetConfPath(name);
 
         // Backup
@@ -259,6 +264,44 @@ public sealed partial class TunnelManager : ITunnelManager
         }
 
         return await File.ReadAllTextAsync(confPath, ct);
+    }
+
+    /// <summary>
+    /// Polls the SCM until the named service entry is fully gone (or timeout).
+    /// This prevents a race condition where /installtunnelservice fails because the
+    /// previous service record hasn't been flushed from the SCM database yet.
+    /// </summary>
+    private async Task WaitForServiceRemovedAsync(string serviceName, CancellationToken ct)
+    {
+        const int maxAttempts = 20;
+        const int pollMs = 250;
+
+        for (int i = 0; i < maxAttempts; i++)
+        {
+            bool exists;
+            try
+            {
+                using var svc = new ServiceController(serviceName);
+                svc.Refresh();
+                // If we can read the status, the service still exists
+                _ = svc.Status;
+                exists = true;
+            }
+            catch (InvalidOperationException)
+            {
+                exists = false;
+            }
+
+            if (!exists)
+            {
+                _logger.LogDebug("Service '{ServiceName}' removed from SCM after {Attempts} poll(s)", serviceName, i + 1);
+                return;
+            }
+
+            await Task.Delay(pollMs, ct);
+        }
+
+        _logger.LogWarning("Service '{ServiceName}' still present in SCM after polling — proceeding anyway", serviceName);
     }
 
     /// <summary>

@@ -50,8 +50,9 @@ Al final cuando termines y no haya ninguna nueva tarea apuntada en el ToDo.md, d
 > Para los usuario con rol administrador, en la configuración quiero que apareza un setting con un switch slide para activar o desactivar esto. Además en la misma debe hacerse notar que es una configuración global, no del usuario.
 > Por defecto no está activado.
 > Añade esto a la documentación README.md
-- He editado un tunnel, y cuando le he dado a guardar los cambios me ha dado error porque dice que el tunnel ya existe, pero de buenas a primeras se eliminó y entonces si me dejó guardar los cambios.
++ He editado un tunnel, y cuando le he dado a guardar los cambios me ha dado error porque dice que el tunnel ya existe, pero de buenas a primeras se eliminó y entonces si me dejó guardar los cambios.
 > Supongo que cuando editamos deberemos agregar algun tiempo de espera o comprobar que el tunnel no existe para commitear los cambios al mismo.
+# Implementado: añadido WaitForServiceRemovedAsync() en TunnelManager.cs. Después de /uninstalltunnelservice, el método sondea el SCM hasta 20 veces (250ms entre intentos) para confirmar que la entrada del servicio ha desaparecido. Evita la condición de carrera "ya existe" al reinstalar.
 + Cuando hago scroll en "Acerca de". no baja lo suficiente para mostar todo el cuadro de la licencia.
 # Implementado: reemplazado Padding="16" del ScrollViewer por Margin="16,16,16,24" en el StackPanel interior. En Avalonia el padding del ScrollViewer no se incluye en el extent de scroll, causando que el último elemento quedara cortado.
 + No sé si ya estaba así, pero quiero que el "Servicio Principal" por defecto para la resolución de IP Pública sea "DNS (OpenDNS)"
