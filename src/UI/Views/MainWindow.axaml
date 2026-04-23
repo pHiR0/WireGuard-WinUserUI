@@ -220,6 +220,7 @@
                                                 <Button Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).DeleteTunnelCommand}"
                                                         CommandParameter="{Binding}"
                                                         IsEnabled="{Binding !IsLoading}"
+                                                        IsVisible="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).IsAdvancedOperator}"
                                                         Foreground="#F87171"
                                                         ToolTip.Tip="Eliminar túnel">
                                                     <StackPanel Orientation="Horizontal" Spacing="4">
@@ -230,6 +231,7 @@
                                                 <Button Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ExportTunnelCommand}"
                                                         CommandParameter="{Binding}"
                                                         IsEnabled="{Binding !IsLoading}"
+                                                        IsVisible="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).IsAdvancedOperator}"
                                                         ToolTip.Tip="Exportar configuración">
                                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                                         <TextBlock Text="&#xE896;" FontFamily="Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center"/>
