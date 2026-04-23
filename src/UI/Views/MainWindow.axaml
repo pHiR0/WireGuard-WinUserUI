@@ -497,8 +497,9 @@
                         <TextBlock Text="Acerca de" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
-                <ScrollViewer Padding="16">
-                    <StackPanel Spacing="24" MaxWidth="520" HorizontalAlignment="Center">
+                <ScrollViewer>
+                    <StackPanel Spacing="24" MaxWidth="520" HorizontalAlignment="Center"
+                                Margin="16,16,16,24">
 
                         <!-- Logo + nombre -->
                         <StackPanel Spacing="10" HorizontalAlignment="Center">

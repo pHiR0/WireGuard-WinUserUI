@@ -51,7 +51,8 @@ Al final cuando termines y no haya ninguna nueva tarea apuntada en el ToDo.md, d
 > Añade esto a la documentación README.md
 - He editado un tunnel, y cuando le he dado a guardar los cambios me ha dado error porque dice que el tunnel ya existe, pero de buenas a primeras se eliminó y entonces si me dejó guardar los cambios.
 > Supongo que cuando editamos deberemos agregar algun tiempo de espera o comprobar que el tunnel no existe para commitear los cambios al mismo.
-- Cuando hago scroll en "Acerca de". no baja lo suficiente para mostar todo el cuadro de la licencia.
++ Cuando hago scroll en "Acerca de". no baja lo suficiente para mostar todo el cuadro de la licencia.
+# Implementado: reemplazado Padding="16" del ScrollViewer por Margin="16,16,16,24" en el StackPanel interior. En Avalonia el padding del ScrollViewer no se incluye en el extent de scroll, causando que el último elemento quedara cortado.
 + No sé si ya estaba así, pero quiero que el "Servicio Principal" por defecto para la resolución de IP Pública sea "DNS (OpenDNS)"
 # Implementado: cambiado el proveedor por defecto de "ipinfo" a "dns" en SettingsViewModel.cs (Save(), Load() y SettingsData). Nuevas instalaciones o usuarios sin settings.json previo tendrán DNS (OpenDNS) como primario.
 - Habíamos implementado que no se permiten mas de 1 sesion por usuario, pero en caso de que se lancen 2 simultaneas, y por lo que sea a una no le da tiempo a detectar la otra, quiero que iterativametne cada X segundos compruebe cuantos hay abierto , para el mismo usuario, es decir revise en su mismo espacio de usuario si hay otras sesiones abiertas, y que si detecta mas de una cada proceso por si mismo, mire cual de todas las sesiones abiertas es la que lleva mas tiempo en ejecución o sea la que se ejecutó primero, y si no es la primera de todas se autocierre.
