@@ -11,6 +11,8 @@ Recuerda revisar el archivo ToDo.md antes de terminar la iteracion por si hay ta
 
 Además quiero que cada vez que implementes una tareas o una característica, hagas un git commit , pero no hagas git push , excepto peticion expresa.
 
+Antes de dar por finalizada la iteración asegúrate que se implementado/solventado todo.
+
 ##
 
 Corrige este error e itera hasta que pueda arrancar correctamente (dotnet run --project src/UI)
