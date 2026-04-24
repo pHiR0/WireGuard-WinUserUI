@@ -195,11 +195,15 @@ public partial class MainWindowViewModel : ViewModelBase
                 }
                 else
                 {
+                    IReadOnlyList<TunnelInfo> tunnels = [];
                     if (CurrentRole > UserRole.None)
+                        tunnels = await _pipeClient.ListTunnelsAsync(ct);
+
+                    await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        var tunnels = await _pipeClient.ListTunnelsAsync(ct);
-                        await Dispatcher.UIThread.InvokeAsync(() => SyncTunnelList(tunnels));
-                    }
+                        IsLoadingTunnels = false; // clear in case Disconnected handler set it during auto-reconnect
+                        SyncTunnelList(tunnels);
+                    });
                 }
             }
             catch (OperationCanceledException) { break; }
