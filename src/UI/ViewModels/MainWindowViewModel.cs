@@ -123,7 +123,13 @@ public partial class MainWindowViewModel : ViewModelBase
         Settings = new SettingsViewModel();
 
         pipeClient.Disconnected += () =>
-            Dispatcher.UIThread.Post(() => { IsConnected = false; IsLoadingTunnels = true; Tunnels.Clear(); });
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (!IsConnected) return; // already handled by BackgroundLoop – avoid late-firing race
+                IsConnected = false;
+                IsLoadingTunnels = true;
+                Tunnels.Clear();
+            });
 
         pipeClient.Reconnected += () =>
             Dispatcher.UIThread.Post(() => { IsConnected = true; });

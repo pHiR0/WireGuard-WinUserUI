@@ -152,7 +152,7 @@
                                        Foreground="#94A3B8" FontSize="12"/>
                         </StackPanel>
 
-                        <ScrollViewer>
+                        <ScrollViewer IsVisible="{Binding !IsLoadingTunnels}">
                         <ItemsControl ItemsSource="{Binding Tunnels}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:TunnelViewModel">
@@ -503,7 +503,7 @@
                                     <TextBlock Text="Configuración global (Administrador)"
                                                FontWeight="SemiBold" FontSize="14" Foreground="#60A5FA"/>
                                 </StackPanel>
-                                <TextBlock Text="&#x26A0; Esta sección afecta a TODOS los equipos y usuarios. Los cambios se aplican inmediatamente."
+                                <TextBlock Text="&#x26A0; Esta sección afecta a TODOS los usuarios. Los cambios se aplican inmediatamente."
                                            FontSize="11" Foreground="#F59E0B" TextWrapping="Wrap"/>
 
                                 <Border Background="#1E2D45" CornerRadius="6" Padding="12">
