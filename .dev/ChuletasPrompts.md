@@ -15,3 +15,6 @@ Además quiero que cada vez que implementes una tareas o una característica, ha
 
 Corrige este error e itera hasta que pueda arrancar correctamente (dotnet run --project src/UI)
 
+## (GPT-4.1)
+
+Dame una descripcion, en formato markdown raw, para poner en el campo "Describe this release" de github pra una nueva release, teniendo en cuenta lo implementado desde el commit COMMIT_HASH 
