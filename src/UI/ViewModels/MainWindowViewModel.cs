@@ -31,7 +31,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private string _currentUser = string.Empty;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsOperator), nameof(IsAdvancedOperator), nameof(IsAdmin), nameof(CurrentRoleText), nameof(HasNoPermissions))]
+    [NotifyPropertyChangedFor(nameof(IsOperator), nameof(IsAdvancedOperator), nameof(IsAdmin), nameof(CurrentRoleText), nameof(HasNoPermissions), nameof(IsAuditTabVisible))]
     private UserRole _currentRole;
 
     [ObservableProperty]
@@ -57,6 +57,24 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>Flag to avoid writing the global setting back to the service during the initial load.</summary>
     private bool _globalSettingsLoaded;
 
+    // --- Audit settings (global, Admin only) ---
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAuditTabVisible))]
+    private bool _auditEnabled = true;
+
+    /// <summary>Numeric size value shown in the UI. Unit is determined by AuditSizeUnit.</summary>
+    [ObservableProperty]
+    private decimal _auditMaxSizeValue;
+
+    [ObservableProperty]
+    private string _auditSizeUnit = "MB";
+
+    public IReadOnlyList<string> AuditSizeUnits { get; } = ["KB", "MB"];
+
+    /// <summary>Prevents saving audit settings back to the service during the initial load.</summary>
+    private bool _auditSettingsLoaded;
+
     [ObservableProperty]
     private string _publicIp = "—";
 
@@ -76,6 +94,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>True when connected to the service but the user has no role assigned.</summary>
     public bool HasNoPermissions => IsConnected && CurrentRole == UserRole.None;
+
+    /// <summary>Audit tab is visible only for Admins when audit is globally enabled.</summary>
+    public bool IsAuditTabVisible => IsAdmin && AuditEnabled;
 
     // Role display
     public string CurrentRoleText => CurrentRole switch
@@ -163,11 +184,14 @@ public partial class MainWindowViewModel : ViewModelBase
                         catch { /* ignore — stay connected but show empty list */ }
                     }
 
-                    // Load global settings (Admin only; non-admins get false silently)
+                    // Load global settings (Admin only; non-admins get defaults silently)
                     bool allUsersDefaultOperator = false;
+                    var auditSettings = new WireGuard.Shared.Models.AuditSettingsData { IsEnabled = true, MaxSizeKb = 0 };
                     if (role >= UserRole.Admin)
                     {
                         try { allUsersDefaultOperator = await _pipeClient.GetAllUsersDefaultOperatorAsync(ct); }
+                        catch { /* ignore */ }
+                        try { auditSettings = await _pipeClient.GetAuditSettingsAsync(ct); }
                         catch { /* ignore */ }
                     }
 
@@ -191,6 +215,16 @@ public partial class MainWindowViewModel : ViewModelBase
                         _globalSettingsLoaded = false;
                         AllUsersDefaultOperator = allUsersDefaultOperator;
                         _globalSettingsLoaded = true;
+
+                        // Set audit settings without triggering save-back to service
+                        _auditSettingsLoaded = false;
+                        AuditEnabled = auditSettings.IsEnabled;
+                        // Convert MaxSizeKb to display value in MB (default unit)
+                        AuditSizeUnit = "MB";
+                        AuditMaxSizeValue = auditSettings.MaxSizeKb > 0
+                            ? Math.Round(auditSettings.MaxSizeKb / 1024m, 1)
+                            : 0m;
+                        _auditSettingsLoaded = true;
                     });
                 }
                 else
@@ -225,6 +259,44 @@ public partial class MainWindowViewModel : ViewModelBase
             try { await _pipeClient.SetAllUsersDefaultOperatorAsync(value); }
             catch { /* ignore — service may be unreachable */ }
         });
+    }
+
+    partial void OnAuditEnabledChanged(bool value)
+    {
+        if (!_auditSettingsLoaded || !IsAdmin) return;
+        _ = SaveAuditSettingsAsync();
+    }
+
+    partial void OnAuditMaxSizeValueChanged(decimal value)
+    {
+        if (!_auditSettingsLoaded || !IsAdmin) return;
+        _ = SaveAuditSettingsAsync();
+    }
+
+    partial void OnAuditSizeUnitChanged(string value)
+    {
+        if (!_auditSettingsLoaded || !IsAdmin) return;
+        _ = SaveAuditSettingsAsync();
+    }
+
+    private int ComputeAuditMaxSizeKb()
+    {
+        if (AuditMaxSizeValue <= 0) return 0;
+        var multiplier = AuditSizeUnit == "MB" ? 1024m : 1m;
+        return (int)(AuditMaxSizeValue * multiplier);
+    }
+
+    private async Task SaveAuditSettingsAsync()
+    {
+        try
+        {
+            await _pipeClient.SetAuditSettingsAsync(new WireGuard.Shared.Models.AuditSettingsData
+            {
+                IsEnabled = AuditEnabled,
+                MaxSizeKb = ComputeAuditMaxSizeKb(),
+            });
+        }
+        catch { /* ignore — service may be unreachable */ }
     }
 
     private void SyncTunnelList(IReadOnlyList<TunnelInfo> infos)    {

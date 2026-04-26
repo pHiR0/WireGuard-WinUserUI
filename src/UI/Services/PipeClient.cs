@@ -282,6 +282,33 @@ public sealed class PipeClient : IPipeClient
         await SendExpectOkAsync(request, ct);
     }
 
+    // --- Phase 3: Audit settings ---
+
+    public async Task<AuditSettingsData> GetAuditSettingsAsync(CancellationToken ct = default)
+    {
+        var response = await SendAsync(new IpcRequest
+        {
+            Command = IpcCommand.GetAuditSettings,
+            RequestId = Guid.NewGuid().ToString("N"),
+        }, ct);
+
+        if (!response.Success)
+            return new AuditSettingsData { IsEnabled = true, MaxSizeKb = 0 };
+
+        return response.GetData<AuditSettingsData>()
+            ?? new AuditSettingsData { IsEnabled = true, MaxSizeKb = 0 };
+    }
+
+    public async Task SetAuditSettingsAsync(AuditSettingsData settings, CancellationToken ct = default)
+    {
+        await SendExpectOkAsync(new IpcRequest
+        {
+            Command = IpcCommand.SetAuditSettings,
+            AuditSettings = settings,
+            RequestId = Guid.NewGuid().ToString("N"),
+        }, ct);
+    }
+
     public async ValueTask DisposeAsync()
     {
         _disposed = true;

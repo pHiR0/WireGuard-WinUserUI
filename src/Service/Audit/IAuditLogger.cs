@@ -12,6 +12,8 @@ public interface IAuditLogger
 public sealed class AuditEntry
 {
     public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? TimestampEnd { get; set; }   // set when grouped
+    public int Count { get; set; } = 1;                 // incremented on deduplication
     public required string Username { get; init; }
     public required string Action { get; init; }
     public string? Tunnel { get; init; }

@@ -40,6 +40,10 @@ public sealed class AuthorizationService : IAuthorizationService
         // Phase 3 — Global settings
         [IpcCommand.GetGlobalSettings] = UserRole.Admin,
         [IpcCommand.SetGlobalSettings] = UserRole.Admin,
+
+        // Phase 3 — Audit settings
+        [IpcCommand.GetAuditSettings] = UserRole.Admin,
+        [IpcCommand.SetAuditSettings] = UserRole.Admin,
     };
 
     public bool IsAuthorized(UserRole role, IpcCommand command)

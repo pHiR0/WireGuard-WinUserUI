@@ -307,7 +307,7 @@
 
             <!-- ==================== TAB: Auditoría ==================== -->
             <TabItem x:DataType="vm:MainWindowViewModel"
-                     IsVisible="{Binding IsAdmin}">
+                     IsVisible="{Binding IsAuditTabVisible}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <TextBlock Text="&#xE8F9;" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center"/>
@@ -364,12 +364,24 @@
                                         <DockPanel>
                                             <StackPanel>
                                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                                    <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
-                                                               FontSize="11" Foreground="#94A3B8" Width="130"/>
+                                                    <!-- Timestamp: show range when grouped -->
+                                                    <StackPanel Width="130">
+                                                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
+                                                                   FontSize="11" Foreground="#94A3B8"/>
+                                                        <TextBlock FontSize="10" Foreground="#6B7280"
+                                                                   IsVisible="{Binding IsGrouped}"
+                                                                   Text="{Binding TimestampEnd, StringFormat='→ {0:yyyy-MM-dd HH:mm:ss}'}"/>
+                                                    </StackPanel>
                                                     <TextBlock Text="{Binding Username}" FontWeight="SemiBold" FontSize="12" Width="120"/>
                                                     <TextBlock Text="{Binding Action}" FontSize="12" Width="130"/>
                                                     <TextBlock Text="{Binding Tunnel}" FontSize="12" Foreground="#94A3B8" Width="120"/>
                                                     <TextBlock Text="{Binding Result}" FontSize="12" FontWeight="SemiBold"/>
+                                                    <!-- Count badge for grouped events -->
+                                                    <Border Background="#1E3A5F" CornerRadius="10" Padding="6,1"
+                                                            IsVisible="{Binding IsGrouped}">
+                                                        <TextBlock Text="{Binding CountText}" FontSize="11"
+                                                                   Foreground="#60A5FA" FontWeight="SemiBold"/>
+                                                    </Border>
                                                 </StackPanel>
                                                 <TextBlock Text="{Binding Error}" FontSize="11" Foreground="#FB923C"
                                                            IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
@@ -515,6 +527,68 @@
                                                    FontWeight="SemiBold" FontSize="12"/>
                                         <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#94A3B8"
                                                    Text="Cuando está activado, cualquier usuario autenticado que NO pertenezca a ningún grupo de roles de WireGuard Manager será tratado automáticamente como Operador. Los usuarios con rol explícito mantienen su rol asignado."/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Auditoría global -->
+                                <Border Background="#1E2D45" CornerRadius="6" Padding="12">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Auditoría" FontWeight="SemiBold" FontSize="12"
+                                                   Foreground="#E2E8F0"/>
+                                        <!-- Enable/disable -->
+                                        <StackPanel Spacing="4">
+                                            <ToggleSwitch IsChecked="{Binding AuditEnabled}"
+                                                          OnContent="Activada" OffContent="Desactivada"/>
+                                            <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#94A3B8"
+                                                       Text="Cuando está desactivada no se registra ningún evento y la pestaña Auditoría desaparece para todos los usuarios."/>
+                                        </StackPanel>
+                                        <!-- Size limit -->
+                                        <StackPanel Spacing="4" IsEnabled="{Binding AuditEnabled}">
+                                            <TextBlock Text="Tamaño máximo del log (0 = sin límite):"
+                                                       FontSize="11" Foreground="#94A3B8"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <NumericUpDown Value="{Binding AuditMaxSizeValue}"
+                                                               Minimum="0" Maximum="99999"
+                                                               FormatString="0" Width="110"
+                                                               Increment="1"/>
+                                                <ComboBox ItemsSource="{Binding AuditSizeUnits}"
+                                                          SelectedItem="{Binding AuditSizeUnit}"
+                                                          Width="70"/>
+                                            </StackPanel>
+                                            <TextBlock FontSize="10" Foreground="#6B7280" TextWrapping="Wrap"
+                                                       Text="Al superar el límite se eliminan automáticamente los eventos más antiguos hasta quedar un 10% por debajo del límite."/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Auditoría global -->
+                                <Border Background="#1E2D45" CornerRadius="6" Padding="12">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Auditoría" FontWeight="SemiBold" FontSize="12"
+                                                   Foreground="#E2E8F0"/>
+                                        <!-- Enable/disable -->
+                                        <StackPanel Spacing="4">
+                                            <ToggleSwitch IsChecked="{Binding AuditEnabled}"
+                                                          OnContent="Activada" OffContent="Desactivada"/>
+                                            <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#94A3B8"
+                                                       Text="Cuando está desactivada no se registra ningún evento y la pestaña Auditoría desaparece para todos los usuarios."/>
+                                        </StackPanel>
+                                        <!-- Size limit -->
+                                        <StackPanel Spacing="4" IsEnabled="{Binding AuditEnabled}">
+                                            <TextBlock Text="Tamaño máximo del log (0 = sin límite):"
+                                                       FontSize="11" Foreground="#94A3B8"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <NumericUpDown Value="{Binding AuditMaxSizeValue}"
+                                                               Minimum="0" Maximum="99999"
+                                                               FormatString="0" Width="110"
+                                                               Increment="1"/>
+                                                <ComboBox ItemsSource="{Binding AuditSizeUnits}"
+                                                          SelectedItem="{Binding AuditSizeUnit}"
+                                                          Width="70"/>
+                                            </StackPanel>
+                                            <TextBlock FontSize="10" Foreground="#6B7280" TextWrapping="Wrap"
+                                                       Text="Al superar el límite se eliminan automáticamente los eventos más antiguos hasta quedar un 10% por debajo del límite."/>
+                                        </StackPanel>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>

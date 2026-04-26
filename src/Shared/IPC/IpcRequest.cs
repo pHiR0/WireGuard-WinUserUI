@@ -28,6 +28,9 @@ public sealed class IpcRequest
     // Phase 3 — Generic bool value for global settings commands
     public bool? BoolValue { get; init; }
 
+    // Phase 3 — Audit settings
+    public AuditSettingsData? AuditSettings { get; init; }
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

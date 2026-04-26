@@ -238,6 +238,22 @@ public sealed class RequestHandler
                 _globalSettings.SetAllUsersDefaultOperator(request.BoolValue.Value);
                 return IpcResponse.Ok(requestId: request.RequestId);
 
+            // --- Phase 3: Audit settings (Admin only) ---
+
+            case IpcCommand.GetAuditSettings:
+                return IpcResponse.Ok(new AuditSettingsData
+                {
+                    IsEnabled  = _globalSettings.GetAuditEnabled(),
+                    MaxSizeKb  = _globalSettings.GetAuditMaxSizeKb(),
+                }, request.RequestId);
+
+            case IpcCommand.SetAuditSettings:
+                if (request.AuditSettings is null)
+                    return IpcResponse.Fail("AuditSettings is required", request.RequestId);
+                _globalSettings.SetAuditEnabled(request.AuditSettings.IsEnabled);
+                _globalSettings.SetAuditMaxSizeKb(request.AuditSettings.MaxSizeKb);
+                return IpcResponse.Ok(requestId: request.RequestId);
+
             default:
                 return IpcResponse.Fail($"Unknown command: {request.Command}", request.RequestId);
         }
