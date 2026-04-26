@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using WireGuard.Service.Auth;
@@ -112,7 +112,7 @@ public sealed class JsonAuditLogger : IAuditLogger
             await using var fs = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
             if (fs.Length == 0) return;
 
-            // Read last 8 KB — large enough for any single audit line
+            // Read last 8 KB â€” large enough for any single audit line
             const int readSize = 8192;
             var startPos = Math.Max(0, fs.Length - readSize);
             fs.Seek(startPos, SeekOrigin.Begin);
@@ -163,7 +163,7 @@ public sealed class JsonAuditLogger : IAuditLogger
         fs.SetLength(_lastLineStartOffset);
         fs.Seek(0, SeekOrigin.End);
         await fs.WriteAsync(bytes, ct);
-        // _lastLineStartOffset doesn't change — the line starts at the same position
+        // _lastLineStartOffset doesn't change â€” the line starts at the same position
     }
 
     /// <summary>
@@ -200,7 +200,7 @@ public sealed class JsonAuditLogger : IAuditLogger
             {
                 await File.WriteAllLinesAsync(_filePath, lines[linesToRemove..], ct);
 
-                // Reset deduplication state — file was restructured
+                // Reset deduplication state â€” file was restructured
                 _initialized = false;
                 _lastEntry = null;
                 _lastLineStartOffset = -1;
@@ -220,129 +220,6 @@ public sealed class JsonAuditLogger : IAuditLogger
     // -------------------------------------------------------------------------
     // Query
     // -------------------------------------------------------------------------
-
-    public async Task<AuditPage> QueryAsync(AuditQuery query, CancellationToken ct = default)
-    {
-        if (!File.Exists(_filePath))
-            return new AuditPage { Entries = [], TotalCount = 0, Page = query.Page, PageSize = query.PageSize };
-
-        await _lock.WaitAsync(ct);
-        try
-        {
-            var lines = await File.ReadAllLinesAsync(_filePath, ct);
-            var entries = new List<AuditEntryDto>();
-
-            foreach (var line in lines)
-            {
-                if (string.IsNullOrWhiteSpace(line)) continue;
-                try
-                {
-                    var entry = JsonSerializer.Deserialize<AuditEntryDto>(line, JsonOptions);
-                    if (entry is null) continue;
-                    entries.Add(entry);
-                }
-                catch
-                {
-                    // Skip malformed lines
-                }
-            }
-
-            // Apply filters
-            IEnumerable<AuditEntryDto> filtered = entries;
-
-            if (!string.IsNullOrEmpty(query.Username))
-                filtered = filtered.Where(e => e.Username.Equals(query.Username, StringComparison.OrdinalIgnoreCase));
-            if (!string.IsNullOrEmpty(query.Action))
-                filtered = filtered.Where(e => e.Action.Equals(query.Action, StringComparison.OrdinalIgnoreCase));
-            if (query.From.HasValue)
-                filtered = filtered.Where(e => e.Timestamp >= query.From.Value);
-            if (query.To.HasValue)
-                filtered = filtered.Where(e => e.Timestamp <= query.To.Value);
-
-            // Order newest first
-            var ordered = filtered.OrderByDescending(e => e.Timestamp).ToList();
-            var totalCount = ordered.Count;
-
-            // Paginate
-            var page = Math.Max(1, query.Page);
-            var pageSize = Math.Clamp(query.PageSize, 1, 200);
-            var paged = ordered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
-            return new AuditPage
-            {
-                Entries = paged,
-                TotalCount = totalCount,
-                Page = page,
-                PageSize = pageSize,
-            };
-        }
-        finally
-        {
-            _lock.Release();
-        }
-    }
-}
-
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    };
-
-    public JsonAuditLogger(ILogger<JsonAuditLogger> logger)
-    {
-        _logger = logger;
-        var dataDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-            "WireGuard-WinUserUI");
-        Directory.CreateDirectory(dataDir);
-        _filePath = Path.Combine(dataDir, "audit.jsonl");
-    }
-
-    public async Task LogAsync(AuditEntry entry, CancellationToken ct = default)
-    {
-        var line = JsonSerializer.Serialize(entry, JsonOptions);
-
-        await _lock.WaitAsync(ct);
-        try
-        {
-            if (!_initialTrimDone)
-            {
-                _initialTrimDone = true;
-                await TrimFileAsync(ct);
-            }
-
-            await File.AppendAllTextAsync(_filePath, line + Environment.NewLine, ct);
-
-            _writeCount++;
-            if (_writeCount % TrimCheckInterval == 0)
-                await TrimFileAsync(ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to write audit log entry");
-        }
-        finally
-        {
-            _lock.Release();
-        }
-    }
-
-    private async Task TrimFileAsync(CancellationToken ct)
-    {
-        try
-        {
-            if (!File.Exists(_filePath)) return;
-            var lines = await File.ReadAllLinesAsync(_filePath, ct);
-            if (lines.Length <= MaxEntries) return;
-            var trimmed = lines[^MaxEntries..];
-            await File.WriteAllLinesAsync(_filePath, trimmed, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to trim audit log");
-        }
-    }
 
     public async Task<AuditPage> QueryAsync(AuditQuery query, CancellationToken ct = default)
     {

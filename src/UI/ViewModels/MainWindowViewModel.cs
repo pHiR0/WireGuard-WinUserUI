@@ -63,9 +63,9 @@ public partial class MainWindowViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(IsAuditTabVisible))]
     private bool _auditEnabled = true;
 
-    /// <summary>Numeric size value shown in the UI. Unit is determined by AuditSizeUnit.</summary>
+    /// <summary>Numeric size value shown in the UI (nullable to handle empty input). Unit is determined by AuditSizeUnit.</summary>
     [ObservableProperty]
-    private decimal _auditMaxSizeValue;
+    private decimal? _auditMaxSizeValue;
 
     [ObservableProperty]
     private string _auditSizeUnit = "MB";
@@ -223,7 +223,7 @@ public partial class MainWindowViewModel : ViewModelBase
                         AuditSizeUnit = "MB";
                         AuditMaxSizeValue = auditSettings.MaxSizeKb > 0
                             ? Math.Round(auditSettings.MaxSizeKb / 1024m, 1)
-                            : 0m;
+                            : 1m;
                         _auditSettingsLoaded = true;
                     });
                 }
@@ -267,9 +267,15 @@ public partial class MainWindowViewModel : ViewModelBase
         _ = SaveAuditSettingsAsync();
     }
 
-    partial void OnAuditMaxSizeValueChanged(decimal value)
+    partial void OnAuditMaxSizeValueChanged(decimal? value)
     {
         if (!_auditSettingsLoaded || !IsAdmin) return;
+        if (value is null || value <= 0)
+        {
+            // Reset to default (1 MB) instead of saving an invalid value
+            AuditMaxSizeValue = 1m;
+            return;
+        }
         _ = SaveAuditSettingsAsync();
     }
 
@@ -281,9 +287,10 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private int ComputeAuditMaxSizeKb()
     {
-        if (AuditMaxSizeValue <= 0) return 0;
+        var value = AuditMaxSizeValue ?? 1m;
         var multiplier = AuditSizeUnit == "MB" ? 1024m : 1m;
-        return (int)(AuditMaxSizeValue * multiplier);
+        var kb = (int)(value * multiplier);
+        return Math.Max(1, kb); // always at least 1 KB
     }
 
     private async Task SaveAuditSettingsAsync()

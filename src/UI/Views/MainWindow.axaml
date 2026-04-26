@@ -544,53 +544,24 @@
                                         </StackPanel>
                                         <!-- Size limit -->
                                         <StackPanel Spacing="4" IsEnabled="{Binding AuditEnabled}">
-                                            <TextBlock Text="Tamaño máximo del log (0 = sin límite):"
+                                            <TextBlock Text="Tamaño máximo del log:"
                                                        FontSize="11" Foreground="#94A3B8"/>
                                             <StackPanel Orientation="Horizontal" Spacing="6">
                                                 <NumericUpDown Value="{Binding AuditMaxSizeValue}"
-                                                               Minimum="0" Maximum="99999"
-                                                               FormatString="0" Width="110"
-                                                               Increment="1"/>
+                                                               Minimum="1" Maximum="99999"
+                                                               FormatString="0" Width="140"
+                                                               Increment="1"
+                                                               NumberFormat="{x:Null}"/>
                                                 <ComboBox ItemsSource="{Binding AuditSizeUnits}"
                                                           SelectedItem="{Binding AuditSizeUnit}"
                                                           Width="70"/>
                                             </StackPanel>
                                             <TextBlock FontSize="10" Foreground="#6B7280" TextWrapping="Wrap"
-                                                       Text="Al superar el límite se eliminan automáticamente los eventos más antiguos hasta quedar un 10% por debajo del límite."/>
+                                                       Text="Al superar el límite se eliminan automáticamente los eventos más antiguos hasta quedar un 10% por debajo del límite. Valor mínimo: 1 KB, por defecto: 1024 KB (1 MB)."/>
                                         </StackPanel>
                                     </StackPanel>
                                 </Border>
 
-                                <!-- Auditoría global -->
-                                <Border Background="#1E2D45" CornerRadius="6" Padding="12">
-                                    <StackPanel Spacing="8">
-                                        <TextBlock Text="Auditoría" FontWeight="SemiBold" FontSize="12"
-                                                   Foreground="#E2E8F0"/>
-                                        <!-- Enable/disable -->
-                                        <StackPanel Spacing="4">
-                                            <ToggleSwitch IsChecked="{Binding AuditEnabled}"
-                                                          OnContent="Activada" OffContent="Desactivada"/>
-                                            <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#94A3B8"
-                                                       Text="Cuando está desactivada no se registra ningún evento y la pestaña Auditoría desaparece para todos los usuarios."/>
-                                        </StackPanel>
-                                        <!-- Size limit -->
-                                        <StackPanel Spacing="4" IsEnabled="{Binding AuditEnabled}">
-                                            <TextBlock Text="Tamaño máximo del log (0 = sin límite):"
-                                                       FontSize="11" Foreground="#94A3B8"/>
-                                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                                <NumericUpDown Value="{Binding AuditMaxSizeValue}"
-                                                               Minimum="0" Maximum="99999"
-                                                               FormatString="0" Width="110"
-                                                               Increment="1"/>
-                                                <ComboBox ItemsSource="{Binding AuditSizeUnits}"
-                                                          SelectedItem="{Binding AuditSizeUnit}"
-                                                          Width="70"/>
-                                            </StackPanel>
-                                            <TextBlock FontSize="10" Foreground="#6B7280" TextWrapping="Wrap"
-                                                       Text="Al superar el límite se eliminan automáticamente los eventos más antiguos hasta quedar un 10% por debajo del límite."/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Border>
                             </StackPanel>
                         </Border>
 
